@@ -40,7 +40,7 @@ public class HomeController {
 
         model.addAttribute("members", memberService.findAll());
 
-        return "redirect:/list";
+        return "list";
     }
 
     @GetMapping("/search")
@@ -49,5 +49,13 @@ public class HomeController {
         model.addAttribute("members", memberService.search(keyword));
 
         return "list";
+    }
+
+    @GetMapping("/delete")
+    public String delete(Long id) {
+
+        memberService.delete(id);
+
+        return "redirect:/list";
     }
 }

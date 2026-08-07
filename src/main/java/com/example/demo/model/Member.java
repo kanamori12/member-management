@@ -5,6 +5,7 @@ public class Member {
     private String name;
     private Integer age;
     private String memberType;
+    private Long id;
 
     public Member() {
     }
@@ -31,5 +32,13 @@ public class Member {
 
     public void setMemberType(String memberType) {
         this.memberType = memberType;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

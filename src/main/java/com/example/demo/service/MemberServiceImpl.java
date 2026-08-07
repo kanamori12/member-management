@@ -12,8 +12,12 @@ public class MemberServiceImpl implements MemberService {
 
     private final List<Member> members = new ArrayList<>();
 
+    private Long nextId = 1L;
+
     @Override
     public void register(Member member) {
+        member.setId(nextId);
+        nextId++;
         members.add(member);
     }
 
@@ -36,5 +40,12 @@ public class MemberServiceImpl implements MemberService {
         }
 
         return result;
+    }
+
+    @Override
+    public void delete(Long id) {
+
+        members.removeIf(member -> member.getId().equals(id));
+
     }
 }
