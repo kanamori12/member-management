@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>登録内容</title>
+</head>
+<body>
+
+<h1>登録内容</h1>
+
+<p>名前：<span th:text="${member.name}"></span></p>
+
+<p>年齢：<span th:text="${member.age}"></span></p>
+
+<p>会員種別：<span th:text="${member.memberType}"></span></p>
+
+<p>
+    <a th:href="@{/}">
+        戻る
+    </a>
+</p>
+
+</body>
+</html>
