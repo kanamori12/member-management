@@ -16,16 +16,19 @@
 
         名前：
         <input type="text" th:field="*{name}">
+        <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color:red"></span>
         <br><br>
 
         年齢：
         <input type="number" th:field="*{age}">
+        <span th:if="${#fields.hasErrors('age')}" th:errors="*{age}" style="color:red"></span>
         <br><br>
 
         会員種別：
         <input type="radio" th:field="*{memberType}" value="一般">一般
 
         <input type="radio" th:field="*{memberType}" value="ゴールド">ゴールド
+        <span th:if="${#fields.hasErrors('memberType')}" th:errors="*{memberType}" style="color:red"></span>
         <br><br>
 
         <button type="submit">更新</button>

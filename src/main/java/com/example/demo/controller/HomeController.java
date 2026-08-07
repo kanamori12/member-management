@@ -4,7 +4,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
 import com.example.demo.model.Member;
 import com.example.demo.service.MemberService;
 
@@ -26,13 +27,17 @@ public class HomeController {
     }
 
     @PostMapping("/register")
-    public String register(Member member, Model model) {
+    public String register(@Valid Member member,
+            BindingResult bindingResult,
+            Model model) {
+
+        if (bindingResult.hasErrors()) {
+            return "index";
+        }
 
         memberService.register(member);
 
-        model.addAttribute("members", memberService.findAll());
-
-        return "list";
+        return "redirect:/list";
     }
 
     @GetMapping("/list")
@@ -70,7 +75,12 @@ public class HomeController {
     }
 
     @PostMapping("/update")
-    public String update(Member member) {
+    public String update(@Valid Member member,
+            BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            return "edit";
+        }
 
         memberService.update(member);
 

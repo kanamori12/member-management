@@ -29,14 +29,25 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public List<Member> search(String keyword) {
 
+        // 前後の空白を削除
+        keyword = keyword.trim();
+
+        // 空欄なら全件表示
+        if (keyword.isEmpty()) {
+            return members;
+        }
+
         List<Member> result = new ArrayList<>();
 
         for (Member member : members) {
 
-            if (member.getName().contains(keyword)) {
+            boolean matchName = member.getName().contains(keyword);
+            boolean matchType = member.getMemberType().contains(keyword);
+            boolean matchAge = String.valueOf(member.getAge()).contains(keyword);
+
+            if (matchName || matchType || matchAge) {
                 result.add(member);
             }
-
         }
 
         return result;

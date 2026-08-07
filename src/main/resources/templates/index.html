@@ -1,41 +1,47 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <title>会員管理システム</title>
 </head>
+
 <body>
 
-<h1>会員管理システム</h1>
+    <h1>会員管理システム</h1>
 
-<form th:action="@{/register}" th:object="${member}" method="post">
+    <form th:action="@{/register}" th:object="${member}" method="post">
 
-    <p>
-        名前<br>
-        <input type="text" th:field="*{name}">
-    </p>
+        <p>
+            名前<br>
+            <input type="text" th:field="*{name}">
+            <br>
+            <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color:red"></span>
+        </p>
 
-    <p>
-        年齢<br>
-        <input type="number" th:field="*{age}">
-    </p>
+        <p>
+            年齢<br>
+            <input type="number" th:field="*{age}">
+            <br>
+            <span th:if="${#fields.hasErrors('age')}" th:errors="*{age}" style="color:red"></span>
+        </p>
 
-    <p>
-        会員種別<br>
+        <p>
+            会員種別<br>
 
-        <input type="radio"
-               th:field="*{memberType}"
-               value="一般">一般
+            <input type="radio" th:field="*{memberType}" value="一般">一般
 
-        <input type="radio"
-               th:field="*{memberType}"
-               value="ゴールド">ゴールド
-    </p>
+            <input type="radio" th:field="*{memberType}" value="ゴールド">ゴールド
 
-    <button type="submit">
-        登録
-    </button>
+            <br>
+            <span th:if="${#fields.hasErrors('memberType')}" th:errors="*{memberType}" style="color:red"></span>
+        </p>
 
-</form>
+        <button type="submit">
+            登録
+        </button>
+
+    </form>
 </body>
+
 </html>
