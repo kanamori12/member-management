@@ -38,6 +38,8 @@
             <td th:text="${member.age}"></td>
             <td th:text="${member.memberType}"></td>
             <td>
+                <a th:href="@{/edit(id=${member.id})}">編集</a>
+                |
                 <a th:href="@{/delete(id=${member.id})}">削除</a>
             </td>
         </tr>

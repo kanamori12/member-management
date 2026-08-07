@@ -58,4 +58,22 @@ public class HomeController {
 
         return "redirect:/list";
     }
+
+    @GetMapping("/edit")
+    public String edit(Long id, Model model) {
+
+        Member member = memberService.findById(id);
+
+        model.addAttribute("member", member);
+
+        return "edit";
+    }
+
+    @PostMapping("/update")
+    public String update(Member member) {
+
+        memberService.update(member);
+
+        return "redirect:/list";
+    }
 }

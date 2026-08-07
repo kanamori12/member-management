@@ -48,4 +48,28 @@ public class MemberServiceImpl implements MemberService {
         members.removeIf(member -> member.getId().equals(id));
 
     }
+
+    @Override
+    public Member findById(Long id) {
+
+        for (Member member : members) {
+            if (member.getId().equals(id)) {
+                return member;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public void update(Member member) {
+
+        Member oldMember = findById(member.getId());
+
+        if (oldMember != null) {
+            oldMember.setName(member.getName());
+            oldMember.setAge(member.getAge());
+            oldMember.setMemberType(member.getMemberType());
+        }
+    }
 }

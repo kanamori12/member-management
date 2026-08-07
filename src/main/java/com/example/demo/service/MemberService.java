@@ -12,4 +12,8 @@ public interface MemberService {
     List<Member> search(String keyword);
 
     void delete(Long id);
+
+    Member findById(Long id);
+
+    void update(Member member);
 }
