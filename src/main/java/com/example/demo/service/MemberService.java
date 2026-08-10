@@ -17,4 +17,5 @@ public interface MemberService {
     Member findById(Long id);
 
     void update(Member member);
+
 }

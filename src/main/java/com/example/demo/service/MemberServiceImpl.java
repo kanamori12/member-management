@@ -1,79 +1,81 @@
 package com.example.demo.service;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Comparator;
+import java.util.List;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.model.Member;
 import com.example.demo.model.MemberSearchCondition;
+import com.example.demo.repository.MemberRepository;
 
 @Service
 public class MemberServiceImpl implements MemberService {
 
-    private final List<Member> members = new ArrayList<>();
+    private final MemberRepository memberRepository;
 
-    private Long nextId = 1L;
+    public MemberServiceImpl(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
 
     @Override
     public void register(Member member) {
-        member.setId(nextId);
-        nextId++;
-        members.add(member);
+
+        memberRepository.save(member);
     }
 
     @Override
     public List<Member> findAll() {
-        return members;
+
+        return memberRepository.findAll();
     }
 
     @Override
     public List<Member> search(MemberSearchCondition condition) {
 
-        List<Member> result = new ArrayList<>();
+        Specification<Member> specification = Specification.unrestricted();
 
-        for (Member member : members) {
+        // 名前
+        if (condition.getName() != null
+                && !condition.getName().isBlank()) {
 
-            boolean match = true;
+            String name = condition.getName().trim();
 
-            // 名前
-            if (condition.getName() != null
-                    && !condition.getName().isBlank()) {
-
-                if (!member.getName().contains(condition.getName().trim())) {
-                    match = false;
-                }
-            }
-
-            // 年齢
-            if (condition.getAge() != null) {
-
-                if (!member.getAge().equals(condition.getAge())) {
-                    match = false;
-                }
-            }
-
-            // 会員種別
-            if (condition.getMemberType() != null
-                    && !condition.getMemberType().isBlank()) {
-
-                if (!member.getMemberType().equals(condition.getMemberType())) {
-                    match = false;
-                }
-            }
-
-            if (match) {
-                result.add(member);
-            }
+            specification = specification.and(
+                    (root, query, cb) -> cb.like(root.get("name"), "%" + name + "%"));
         }
+
+        // 年齢
+        if (condition.getAge() != null) {
+
+            Integer age = condition.getAge();
+
+            specification = specification.and(
+                    (root, query, cb) -> cb.equal(root.get("age"), age));
+        }
+
+        // 会員種別
+        if (condition.getMemberType() != null
+                && !condition.getMemberType().isBlank()) {
+
+            String memberType = condition.getMemberType();
+
+            specification = specification.and(
+                    (root, query, cb) -> cb.equal(root.get("memberType"), memberType));
+        }
+
+        List<Member> result = memberRepository.findAll(specification);
+
+        // 並び順
         if ("idAsc".equals(condition.getSort())) {
 
             result.sort(Comparator.comparing(Member::getId));
 
         } else if ("idDesc".equals(condition.getSort())) {
 
-            result.sort(Comparator.comparing(Member::getId).reversed());
+            result.sort(
+                    Comparator.comparing(Member::getId).reversed());
 
         } else if ("nameAsc".equals(condition.getSort())) {
 
@@ -82,39 +84,27 @@ public class MemberServiceImpl implements MemberService {
         } else if ("ageAsc".equals(condition.getSort())) {
 
             result.sort(Comparator.comparing(Member::getAge));
-
         }
+
         return result;
     }
 
     @Override
     public void delete(Long id) {
 
-        members.removeIf(member -> member.getId().equals(id));
-
+        memberRepository.deleteById(id);
     }
 
     @Override
     public Member findById(Long id) {
 
-        for (Member member : members) {
-            if (member.getId().equals(id)) {
-                return member;
-            }
-        }
-
-        return null;
+        return memberRepository.findById(id).orElse(null);
     }
 
     @Override
     public void update(Member member) {
 
-        Member oldMember = findById(member.getId());
-
-        if (oldMember != null) {
-            oldMember.setName(member.getName());
-            oldMember.setAge(member.getAge());
-            oldMember.setMemberType(member.getMemberType());
-        }
+        memberRepository.save(member);
     }
+
 }

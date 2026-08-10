@@ -4,13 +4,17 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 
-
+@Entity
 public class Member {
 
     @NotBlank(message = "名前を入力してください")
     private String name;
-    
+
     @NotNull(message = "年齢を入力してください")
     @Min(value = 0, message = "年齢は0歳以上で入力してください")
     @Max(value = 120, message = "年齢は120歳以下で入力してください")
@@ -18,6 +22,9 @@ public class Member {
 
     @NotBlank(message = "会員種別を入力してください")
     private String memberType;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     public Member() {
