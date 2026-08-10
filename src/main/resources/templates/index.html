@@ -1,47 +1,87 @@
 <!DOCTYPE html>
+
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
-    <title>会員管理システム</title>
+    <title>会員登録</title>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
 </head>
 
 <body>
 
-    <h1>会員管理システム</h1>
+    <h1>会員登録</h1>
 
-    <form th:action="@{/register}" th:object="${member}" method="post">
+    <div class="form-container">
 
-        <p>
-            名前<br>
-            <input type="text" th:field="*{name}">
-            <br>
-            <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color:red"></span>
-        </p>
+        <form th:action="@{/register}" th:object="${member}" method="post">
 
-        <p>
-            年齢<br>
-            <input type="number" th:field="*{age}">
-            <br>
-            <span th:if="${#fields.hasErrors('age')}" th:errors="*{age}" style="color:red"></span>
-        </p>
+            <div class="form-item">
 
-        <p>
-            会員種別<br>
+                <label>名前</label>
 
-            <input type="radio" th:field="*{memberType}" value="一般">一般
+                <input type="text" th:field="*{name}">
 
-            <input type="radio" th:field="*{memberType}" value="ゴールド">ゴールド
+                <span class="error-message" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
+                </span>
 
-            <br>
-            <span th:if="${#fields.hasErrors('memberType')}" th:errors="*{memberType}" style="color:red"></span>
-        </p>
+            </div>
 
-        <button type="submit">
-            登録
-        </button>
 
-    </form>
+            <div class="form-item">
+
+                <label>年齢</label>
+
+                <input type="number" th:field="*{age}" min="0">
+
+                <span class="error-message" th:if="${#fields.hasErrors('age')}" th:errors="*{age}">
+                </span>
+
+            </div>
+
+
+            <div class="form-item">
+
+                <label>会員種別</label>
+
+                <div class="radio-group">
+
+                    <label>
+                        <input type="radio" th:field="*{memberType}" value="一般">
+                        一般
+                    </label>
+
+                    <label>
+                        <input type="radio" th:field="*{memberType}" value="ゴールド">
+                        ゴールド
+                    </label>
+
+                </div>
+
+                <span class="error-message" th:if="${#fields.hasErrors('memberType')}" th:errors="*{memberType}">
+                </span>
+
+            </div>
+
+
+            <div class="form-buttons">
+
+                <button type="submit" class="button button-primary">
+                    登録
+                </button>
+
+                <a th:href="@{/list}" class="button button-secondary">
+                    一覧に戻る
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
 </body>
 
 </html>

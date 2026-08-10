@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import java.util.List;
 import com.example.demo.model.Member;
+import com.example.demo.model.MemberSearchCondition;
 
 public interface MemberService {
 
@@ -9,7 +10,7 @@ public interface MemberService {
 
     List<Member> findAll();
 
-    List<Member> search(String keyword);
+    List<Member> search(MemberSearchCondition condition);
 
     void delete(Long id);
 

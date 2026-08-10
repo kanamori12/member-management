@@ -1,56 +1,129 @@
 <!DOCTYPE html>
+
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <title>会員一覧</title>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
 </head>
 
 <body>
 
     <h1>会員一覧</h1>
-    <form th:action="@{/search}" method="get">
 
-        名前：
-        <input type="text" name="keyword">
+    <!-- 検索フォーム -->
 
-        <button type="submit">
-            検索
-        </button>
+    <form class="search-form" th:action="@{/search}" th:object="${condition}" method="get">
+
+        <div class="search-row">
+
+            <div class="search-item">
+                <label>名前</label>
+                <input type="text" th:field="*{name}">
+            </div>
+
+            <div class="search-item">
+                <label>年齢</label>
+                <input type="number" th:field="*{age}" min="0">
+            </div>
+
+            <div class="search-item">
+                <label>会員種別</label>
+                <select th:field="*{memberType}">
+                    <option value="">すべて</option>
+                    <option value="一般">一般</option>
+                    <option value="ゴールド">ゴールド</option>
+                </select>
+            </div>
+
+            <div class="search-item">
+                <label>並び順</label>
+                <select th:field="*{sort}">
+                    <option value="idAsc">ID昇順</option>
+                    <option value="idDesc">ID降順</option>
+                    <option value="nameAsc">名前昇順</option>
+                    <option value="ageAsc">年齢昇順</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="search-buttons">
+
+            <button type="submit" class="button button-primary">
+                検索
+            </button>
+
+            <a th:href="@{/list}" class="button button-secondary">
+                クリア
+            </a>
+
+        </div>
 
     </form>
 
-    <br>
+    <!-- 会員一覧 -->
 
-    <table border="1">
+    <table class="member-table">
 
-        <tr>
-            <th>ID</th>
-            <th>名前</th>
-            <th>年齢</th>
-            <th>会員種別</th>
-            <th>操作</th>
-        </tr>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>名前</th>
+                <th>年齢</th>
+                <th>会員種別</th>
+                <th>操作</th>
+            </tr>
+        </thead>
 
-        <tr th:each="member : ${members}">
-            <td th:text="${member.id}"></td>
-            <td th:text="${member.name}"></td>
-            <td th:text="${member.age}"></td>
-            <td th:text="${member.memberType}"></td>
-            <td>
-                <a th:href="@{/edit(id=${member.id})}">編集</a>
-                |
-                <a th:href="@{/delete(id=${member.id})}">削除</a>
-            </td>
-        </tr>
+        <tbody>
+
+            <tr th:each="member : ${members}">
+
+                <td th:text="${member.id}"></td>
+
+                <td th:text="${member.name}"></td>
+
+                <td th:text="${member.age}"></td>
+
+                <td th:text="${member.memberType}"></td>
+
+                <td>
+
+                    <a class="button button-secondary" th:href="@{/detail(id=${member.id})}">
+                        詳細
+                    </a>
+
+                    <a class="button button-secondary" th:href="@{/edit(id=${member.id})}">
+                        編集
+                    </a>
+
+                    <a class="button button-danger" th:href="@{/delete(id=${member.id})}"
+                        onclick="return confirm('この会員を削除しますか？');">
+                        削除
+                    </a>
+
+                </td>
+
+            </tr>
+
+        </tbody>
 
     </table>
 
+    <!-- 検索結果0件 -->
+
+    <p class="search-result-empty" th:if="${searched and members.isEmpty()}">
+        検索結果がありません。
+    </p>
+
     <br>
 
-    <a th:href="@{/}">
-        新しく登録する
-    </a>
+    <a th:href="@{/}" class="button button-secondary">
+        新しく登録する </a>
 
 </body>
 

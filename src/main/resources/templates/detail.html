@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>会員詳細</title>
+
+<link rel="stylesheet"
+      th:href="@{/css/style.css}">
+
+</head>
+
+<body>
+
+<h1>会員詳細</h1>
+
+<div class="form-container">
+
+<div class="form-item">
+
+    <label>ID</label>
+
+    <span th:text="${member.id}">
+    </span>
+
+</div>
+
+
+<div class="form-item">
+
+    <label>名前</label>
+
+    <span th:text="${member.name}">
+    </span>
+
+</div>
+
+
+<div class="form-item">
+
+    <label>年齢</label>
+
+    <span th:text="${member.age}">
+    </span>
+
+</div>
+
+
+<div class="form-item">
+
+    <label>会員種別</label>
+
+    <span th:text="${member.memberType}">
+    </span>
+
+</div>
+
+
+<div class="form-buttons">
+
+    <a th:href="@{/list}"
+       class="button button-secondary">
+        一覧に戻る
+    </a>
+
+    <a th:href="@{/edit(id=${member.id})}"
+       class="button button-secondary">
+        編集
+    </a>
+
+    <a th:href="@{/delete(id=${member.id})}"
+       class="button button-danger"
+       onclick="return confirm('この会員を削除しますか？');">
+        削除
+    </a>
+
+</div>
+
+</div>
+
+</body>
+</html>

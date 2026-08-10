@@ -2,10 +2,12 @@ package com.example.demo.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Comparator;
 
 import org.springframework.stereotype.Service;
 
 import com.example.demo.model.Member;
+import com.example.demo.model.MemberSearchCondition;
 
 @Service
 public class MemberServiceImpl implements MemberService {
@@ -27,29 +29,61 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public List<Member> search(String keyword) {
-
-        // 前後の空白を削除
-        keyword = keyword.trim();
-
-        // 空欄なら全件表示
-        if (keyword.isEmpty()) {
-            return members;
-        }
+    public List<Member> search(MemberSearchCondition condition) {
 
         List<Member> result = new ArrayList<>();
 
         for (Member member : members) {
 
-            boolean matchName = member.getName().contains(keyword);
-            boolean matchType = member.getMemberType().contains(keyword);
-            boolean matchAge = String.valueOf(member.getAge()).contains(keyword);
+            boolean match = true;
 
-            if (matchName || matchType || matchAge) {
+            // 名前
+            if (condition.getName() != null
+                    && !condition.getName().isBlank()) {
+
+                if (!member.getName().contains(condition.getName().trim())) {
+                    match = false;
+                }
+            }
+
+            // 年齢
+            if (condition.getAge() != null) {
+
+                if (!member.getAge().equals(condition.getAge())) {
+                    match = false;
+                }
+            }
+
+            // 会員種別
+            if (condition.getMemberType() != null
+                    && !condition.getMemberType().isBlank()) {
+
+                if (!member.getMemberType().equals(condition.getMemberType())) {
+                    match = false;
+                }
+            }
+
+            if (match) {
                 result.add(member);
             }
         }
+        if ("idAsc".equals(condition.getSort())) {
 
+            result.sort(Comparator.comparing(Member::getId));
+
+        } else if ("idDesc".equals(condition.getSort())) {
+
+            result.sort(Comparator.comparing(Member::getId).reversed());
+
+        } else if ("nameAsc".equals(condition.getSort())) {
+
+            result.sort(Comparator.comparing(Member::getName));
+
+        } else if ("ageAsc".equals(condition.getSort())) {
+
+            result.sort(Comparator.comparing(Member::getAge));
+
+        }
         return result;
     }
 
