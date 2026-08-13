@@ -1,0 +1,19 @@
+package com.example.demo.exception;
+
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MemberNotFoundException.class)
+    public String handleMemberNotFoundException(
+            MemberNotFoundException e,
+            Model model) {
+
+        model.addAttribute("errorMessage", e.getMessage());
+
+        return "error";
+    }
+}

@@ -55,22 +55,21 @@ public class HomeController {
         return "list";
     }
 
-@GetMapping("/search")
-public String search(
-        MemberSearchCondition condition,
-        Model model) {
+    @GetMapping("/search")
+    public String search(
+            MemberSearchCondition condition,
+            Model model) {
 
-    model.addAttribute(
-            "members",
-            memberService.search(condition)
-    );
+        model.addAttribute(
+                "members",
+                memberService.search(condition));
 
-    model.addAttribute("condition", condition);
+        model.addAttribute("condition", condition);
 
-    model.addAttribute("searched", true);
+        model.addAttribute("searched", true);
 
-    return "list";
-}
+        return "list";
+    }
 
     @GetMapping("/delete")
     public String delete(Long id) {
@@ -111,5 +110,10 @@ public String search(
         model.addAttribute("member", member);
 
         return "detail";
+    }
+
+    @GetMapping("/login")
+    public String login() {
+        return "login";
     }
 }

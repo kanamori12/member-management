@@ -1,11 +1,13 @@
 package com.example.demo.service;
 
-import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.exception.MemberNotFoundException;
 import com.example.demo.model.Member;
 import com.example.demo.model.MemberSearchCondition;
 import com.example.demo.repository.MemberRepository;
@@ -21,18 +23,54 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public void register(Member member) {
-
         memberRepository.save(member);
     }
 
     @Override
     public List<Member> findAll() {
-
         return memberRepository.findAll();
     }
 
     @Override
     public List<Member> search(MemberSearchCondition condition) {
+
+        Specification<Member> specification = createSpecification(condition);
+
+        Sort sort = createSort(condition.getSort());
+
+        return memberRepository.findAll(specification, sort);
+    }
+
+    @Override
+    public void delete(Long id) {
+
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new MemberNotFoundException(id));
+
+        memberRepository.delete(member);
+    }
+
+    @Override
+    public Member findById(Long id) {
+
+        return memberRepository.findById(id)
+                .orElseThrow(() -> new MemberNotFoundException(id));
+    }
+
+    @Override
+    @Transactional
+    public void update(Member member) {
+
+        Member existingMember = memberRepository.findById(member.getId())
+                .orElseThrow(() -> new MemberNotFoundException(member.getId()));
+
+        existingMember.setName(member.getName());
+        existingMember.setAge(member.getAge());
+        existingMember.setMemberType(member.getMemberType());
+    }
+
+    private Specification<Member> createSpecification(
+            MemberSearchCondition condition) {
 
         Specification<Member> specification = Specification.unrestricted();
 
@@ -43,7 +81,9 @@ public class MemberServiceImpl implements MemberService {
             String name = condition.getName().trim();
 
             specification = specification.and(
-                    (root, query, cb) -> cb.like(root.get("name"), "%" + name + "%"));
+                    (root, query, cb) -> cb.like(
+                            root.get("name"),
+                            "%" + name + "%"));
         }
 
         // 年齢
@@ -62,49 +102,29 @@ public class MemberServiceImpl implements MemberService {
             String memberType = condition.getMemberType();
 
             specification = specification.and(
-                    (root, query, cb) -> cb.equal(root.get("memberType"), memberType));
+                    (root, query, cb) -> cb.equal(
+                            root.get("memberType"),
+                            memberType));
         }
 
-        List<Member> result = memberRepository.findAll(specification);
+        return specification;
+    }
 
-        // 並び順
-        if ("idAsc".equals(condition.getSort())) {
+    private Sort createSort(String sort) {
 
-            result.sort(Comparator.comparing(Member::getId));
-
-        } else if ("idDesc".equals(condition.getSort())) {
-
-            result.sort(
-                    Comparator.comparing(Member::getId).reversed());
-
-        } else if ("nameAsc".equals(condition.getSort())) {
-
-            result.sort(Comparator.comparing(Member::getName));
-
-        } else if ("ageAsc".equals(condition.getSort())) {
-
-            result.sort(Comparator.comparing(Member::getAge));
+        if ("idDesc".equals(sort)) {
+            return Sort.by(Sort.Direction.DESC, "id");
         }
 
-        return result;
+        if ("nameAsc".equals(sort)) {
+            return Sort.by(Sort.Direction.ASC, "name");
+        }
+
+        if ("ageAsc".equals(sort)) {
+            return Sort.by(Sort.Direction.ASC, "age");
+        }
+
+        // idAsc または値が不明な場合
+        return Sort.by(Sort.Direction.ASC, "id");
     }
-
-    @Override
-    public void delete(Long id) {
-
-        memberRepository.deleteById(id);
-    }
-
-    @Override
-    public Member findById(Long id) {
-
-        return memberRepository.findById(id).orElse(null);
-    }
-
-    @Override
-    public void update(Member member) {
-
-        memberRepository.save(member);
-    }
-
 }
