@@ -12,49 +12,29 @@
 
 <body>
 
-    <h1>会員詳細</h1>
+    <header th:replace="~{fragments/header :: header('会員詳細', true)}"></header>
 
     <div class="form-container">
 
         <div class="form-item">
-
             <label>ID</label>
-
-            <span th:text="${member.id}">
-            </span>
-
+            <span th:text="${member.id}"></span>
         </div>
 
-
         <div class="form-item">
-
             <label>名前</label>
-
-            <span th:text="${member.name}">
-            </span>
-
+            <span th:text="${member.name}"></span>
         </div>
 
-
         <div class="form-item">
-
             <label>年齢</label>
-
-            <span th:text="${member.age}">
-            </span>
-
+            <span th:text="${member.age}"></span>
         </div>
-
 
         <div class="form-item">
-
             <label>会員種別</label>
-
-            <span th:text="${member.memberType}">
-            </span>
-
+            <span th:text="${member.memberType}"></span>
         </div>
-
 
         <div class="form-buttons">
 

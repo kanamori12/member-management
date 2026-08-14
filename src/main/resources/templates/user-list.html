@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ログインユーザー一覧</title>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<p class="success-message" th:if="${param.registered}">
+    ログインユーザーを登録しました。
+</p>
+
+<p class="success-message" th:if="${param.updated}">
+    ログインユーザーを更新しました。
+</p>
+
+<p class="success-message" th:if="${param.deleted}">
+    ログインユーザーを削除しました。
+</p>
+
+<p class="success-message" th:if="${param.passwordChanged}">
+    パスワードを変更しました。
+</p>
+
+<body>
+
+    <header th:replace="~{fragments/header :: header('ログインユーザー一覧', false)}"></header>
+
+    <table class="member-table">
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>ユーザー名</th>
+                <th>権限</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <tr th:each="user : ${users}">
+
+                <td th:text="${user.id}"></td>
+
+                <td th:text="${user.username}"></td>
+
+                <td th:text="${user.role}"></td>
+
+                <td>
+                    <a th:href="@{/users/edit(id=${user.id})}" class="button button-secondary">
+                        編集
+                    </a>
+                    <a th:href="@{/users/password(id=${user.id})}" class="button button-secondary">
+                        パスワード変更
+                    </a>
+                    <a th:href="@{/users/delete(id=${user.id})}" class="button button-danger"
+                        onclick="return confirm('このログインユーザーを削除しますか？');">
+                        削除
+                    </a>
+
+                </td>
+
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+    <br>
+
+    <a th:href="@{/users/register}" class="button button-primary">
+        新しいユーザーを登録
+    </a>
+
+    <a th:href="@{/list}" class="button button-secondary">
+        会員一覧に戻る
+    </a>
+
+</body>
+
+</html>

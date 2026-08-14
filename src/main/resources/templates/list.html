@@ -12,38 +12,8 @@
 
 <body>
 
-    <div class="page-header">
-
-        <h1>会員一覧</h1>
-
-        <div class="login-area">
-
-            <div class="login-info">
-                <span>
-                    ログイン中：
-                    <strong sec:authentication="name"></strong>
-                </span>
-
-                <span sec:authorize="hasRole('ADMIN')">
-                    権限：ADMIN
-                </span>
-
-                <span sec:authorize="hasRole('USER')">
-                    権限：USER
-                </span>
-            </div>
-
-            <form th:action="@{/logout}" method="post" onsubmit="return confirm('ログアウトしますか？');">
-
-                <button type="submit" class="logout-button">
-                    ログアウト
-                </button>
-
-            </form>
-
-        </div>
-
-    </div>
+     <header th:replace="~{fragments/header :: header('会員一覧', true)}"></header>
+    
     <!-- 検索フォーム -->
 
     <form class="search-form" th:action="@{/search}" th:object="${condition}" method="get">

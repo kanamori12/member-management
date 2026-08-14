@@ -58,6 +58,11 @@ h1 {
     background-color: #ccc;
 }
 
+.success-message {
+    color: green;
+    margin-bottom: 15px;
+}
+
 /* =========================
    共通ボタン
    ========================= */

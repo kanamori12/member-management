@@ -16,4 +16,14 @@ public class GlobalExceptionHandler {
 
         return "error";
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public String handleIllegalArgumentException(
+            IllegalArgumentException e,
+            Model model) {
+
+        model.addAttribute("errorMessage", e.getMessage());
+
+        return "error";
+    }
 }

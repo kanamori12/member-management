@@ -3,9 +3,9 @@ package com.example.demo.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
@@ -17,25 +17,40 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers("/login", "/css/**").permitAll()
+                        .requestMatchers("/login", "/css/**")
+                        .permitAll()
 
                         .requestMatchers("/list", "/detail", "/search")
                         .hasAnyRole("ADMIN", "USER")
+
+                        .requestMatchers("/users/**")
+                        .hasRole("ADMIN")
 
                         .requestMatchers(
                                 "/",
                                 "/register",
                                 "/edit",
                                 "/update",
-                                "/delete")
+                                "/delete",
+                                "/users",
+                                "/users/register")
                         .hasRole("ADMIN")
 
-                        .anyRequest().authenticated())
+                        .anyRequest()
+                        .authenticated())
+
                 .formLogin(form -> form
                         .loginPage("/login")
+                        .defaultSuccessUrl("/list", true)
+                        .failureUrl("/login?error")
                         .permitAll())
+
                 .logout(logout -> logout
-                        .permitAll());
+                        .logoutSuccessUrl("/login?logout")
+                        .permitAll())
+
+                .exceptionHandling(exception -> exception
+                        .accessDeniedPage("/403"));
 
         return http.build();
     }

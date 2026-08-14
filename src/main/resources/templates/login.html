@@ -5,38 +5,43 @@
     <meta charset="UTF-8">
     <title>ログイン</title>
 
-    <link rel="stylesheet"
-          th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body>
 
-<h1>ログイン</h1>
+    <h1>ログイン</h1>
 
-<div class="form-container">
+    <div class="form-container">
+        <p class="error-message" th:if="${param.error}">
+            ユーザー名またはパスワードが正しくありません。
+        </p>
 
-    <form th:action="@{/login}" method="post">
+        <p class="success-message" th:if="${param.logout}">
+            ログアウトしました。
+        </p>
+        <form th:action="@{/login}" method="post">
 
-        <div class="form-item">
-            <label>ユーザー名</label>
-            <input type="text" name="username">
-        </div>
+            <div class="form-item">
+                <label>ユーザー名</label>
+                <input type="text" name="username">
+            </div>
 
-        <div class="form-item">
-            <label>パスワード</label>
-            <input type="password" name="password">
-        </div>
+            <div class="form-item">
+                <label>パスワード</label>
+                <input type="password" name="password">
+            </div>
 
-        <div class="form-buttons">
-            <button type="submit"
-                    class="button button-primary">
-                ログイン
-            </button>
-        </div>
+            <div class="form-buttons">
+                <button type="submit" class="button button-primary">
+                    ログイン
+                </button>
+            </div>
 
-    </form>
+        </form>
 
-</div>
+    </div>
 
 </body>
+
 </html>
