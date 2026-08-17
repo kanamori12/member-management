@@ -1,49 +1,70 @@
 <!DOCTYPE html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="ja"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <body>
 
-    <header th:fragment="header(title, showUserManagement)" class="page-header">
+<header th:fragment="header(title, showUserManagement)">
 
-        <h1 th:text="${title}">タイトル</h1>
+    <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
 
-        <div class="login-area">
+        <div class="container">
 
-            <div class="login-info">
+            <!-- 画面タイトル -->
+            <span class="navbar-brand"
+                  th:text="${title}">
+                会員管理システム
+            </span>
 
-                <span>
-                    ログイン中：
-                    <strong sec:authentication="name"></strong>
-                </span>
+            <div class="d-flex align-items-center gap-3">
 
-                <span sec:authorize="hasRole('ADMIN')">
-                    権限：ADMIN
-                </span>
+                <!-- ADMINのみ -->
+                <a sec:authorize="hasRole('ADMIN')"
+                   th:if="${showUserManagement}"
+                   th:href="@{/users}"
+                   class="btn btn-outline-light btn-sm">
+                    ログインユーザー管理
+                </a>
 
-                <span sec:authorize="hasRole('USER')">
-                    権限：USER
-                </span>
+                <!-- ログイン情報 -->
+                <div class="text-white small text-end">
+
+                    <div>
+                        ログイン中：
+                        <strong sec:authentication="name"></strong>
+                    </div>
+
+                    <div sec:authorize="hasRole('ADMIN')">
+                        権限：ADMIN
+                    </div>
+
+                    <div sec:authorize="hasRole('USER')">
+                        権限：USER
+                    </div>
+
+                </div>
+
+                <!-- ログアウト -->
+                <form th:action="@{/logout}"
+                      method="post"
+                      class="m-0"
+                      onsubmit="return confirm('ログアウトしますか？');">
+
+                    <button type="submit"
+                            class="btn btn-outline-light btn-sm">
+                        ログアウト
+                    </button>
+
+                </form>
 
             </div>
 
-            <!-- ADMINだけ表示 -->
-            <a sec:authorize="hasRole('ADMIN')" th:if="${showUserManagement}" th:href="@{/users}"
-                class="button button-secondary">
-                ログインユーザー管理
-            </a>
-
-            <form th:action="@{/logout}" method="post" onsubmit="return confirm('ログアウトしますか？');">
-
-                <button type="submit" class="logout-button">
-                    ログアウト
-                </button>
-
-            </form>
-
         </div>
 
-    </header>
+    </nav>
+
+</header>
 
 </body>
-
 </html>

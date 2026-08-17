@@ -1,71 +1,114 @@
 <!DOCTYPE html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<head>
-    <meta charset="UTF-8">
-    <title>ログインユーザー登録</title>
+<html lang="ja"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-</head>
+<head th:replace="~{fragments/head :: head('ログインユーザー登録')}"></head>
 
 <body>
 
     <header th:replace="~{fragments/header :: header('ログインユーザー登録', false)}"></header>
 
-    <div class="form-container">
+    <div class="container-fluid px-4 py-4">
 
-        <form th:action="@{/users/register}" th:object="${appUserForm}" method="post">
+        <div class="card shadow-sm user-form-card">
 
-            <div class="form-item">
+            <div class="card-body">
 
-                <label>ユーザー名</label>
+                <form th:action="@{/users/register}"
+                      th:object="${appUserForm}"
+                      method="post">
 
-                <input type="text" th:field="*{username}">
+                    <!-- ユーザー名 -->
+                    <div class="mb-3">
 
-                <span class="error-message" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">
-                </span>
+                        <label class="form-label">
+                            ユーザー名
+                        </label>
+
+                        <input type="text"
+                               th:field="*{username}"
+                               class="form-control"
+                               placeholder="ユーザー名を入力">
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('username')}"
+                             th:errors="*{username}">
+                        </div>
+
+                    </div>
+
+                    <!-- パスワード -->
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            パスワード
+                        </label>
+
+                        <input type="password"
+                               th:field="*{password}"
+                               class="form-control"
+                               placeholder="パスワードを入力">
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('password')}"
+                             th:errors="*{password}">
+                        </div>
+
+                    </div>
+
+                    <!-- 権限 -->
+                    <div class="mb-4">
+
+                        <label class="form-label">
+                            権限
+                        </label>
+
+                        <select th:field="*{role}"
+                                class="form-select">
+
+                            <option value="">
+                                選択してください
+                            </option>
+
+                            <option value="USER">
+                                USER
+                            </option>
+
+                            <option value="ADMIN">
+                                ADMIN
+                            </option>
+
+                        </select>
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('role')}"
+                             th:errors="*{role}">
+                        </div>
+
+                    </div>
+
+                    <!-- ボタン -->
+                    <div class="d-flex gap-2">
+
+                        <button type="submit"
+                                class="btn btn-primary">
+                            登録
+                        </button>
+
+                        <a th:href="@{/users}"
+                           class="btn btn-outline-secondary">
+                            ログインユーザー一覧に戻る
+                        </a>
+
+                    </div>
+
+                </form>
 
             </div>
 
-            <div class="form-item">
-
-                <label>パスワード</label>
-
-                <input type="password" th:field="*{password}">
-
-                <span class="error-message" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">
-                </span>
-
-            </div>
-
-            <div class="form-item">
-
-                <label>権限</label>
-
-                <select th:field="*{role}">
-                    <option value="">選択してください</option>
-                    <option value="USER">USER</option>
-                    <option value="ADMIN">ADMIN</option>
-                </select>
-
-                <span class="error-message" th:if="${#fields.hasErrors('role')}" th:errors="*{role}">
-                </span>
-
-            </div>
-
-            <div class="form-buttons">
-
-                <button type="submit" class="button button-primary">
-                    登録
-                </button>
-
-                <a th:href="@{/users}" class="button button-secondary">
-                    一覧に戻る
-                </a>
-
-            </div>
-
-        </form>
+        </div>
 
     </div>
 

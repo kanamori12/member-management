@@ -1,21 +1,38 @@
 package com.example.demo.service;
 
-import java.util.List;
 import com.example.demo.model.Member;
 import com.example.demo.model.MemberSearchCondition;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface MemberService {
 
     void register(Member member);
 
-    List<Member> findAll();
+    Page<Member> findAll(
+            String username,
+            boolean admin,
+            Pageable pageable);
 
-    List<Member> search(MemberSearchCondition condition);
+    Page<Member> search(
+            MemberSearchCondition condition,
+            String username,
+            boolean admin,
+            Pageable pageable);
 
-    void delete(Long id);
+    Member findById(
+            Long id,
+            String username,
+            boolean admin);
 
-    Member findById(Long id);
+    void delete(
+            Long id,
+            String username,
+            boolean admin);
 
-    void update(Member member);
+    void update(
+            Member member,
+            String username,
+            boolean admin);
 
 }

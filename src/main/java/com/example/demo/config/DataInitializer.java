@@ -1,11 +1,13 @@
 package com.example.demo.config;
 
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.example.demo.repository.AppUserRepository;
 import com.example.demo.service.AppUserService;
+import com.example.demo.model.Role;
 
 @Configuration
 public class DataInitializer {
@@ -21,14 +23,14 @@ public class DataInitializer {
                 appUserService.register(
                         "admin",
                         "password",
-                        "ADMIN");
+                        Role.ADMIN);
             }
 
             if (appUserRepository.findByUsername("user").isEmpty()) {
                 appUserService.register(
                         "user",
                         "password",
-                        "USER");
+                        Role.USER);
             }
         };
     }

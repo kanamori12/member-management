@@ -1,6 +1,7 @@
 package com.example.demo.model;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class AppUserForm {
 
@@ -10,8 +11,8 @@ public class AppUserForm {
     @NotBlank(message = "パスワードを入力してください")
     private String password;
 
-    @NotBlank(message = "権限を選択してください")
-    private String role;
+    @NotNull(message = "権限を選択してください")
+    private Role role;
 
     public AppUserForm() {
     }
@@ -32,11 +33,11 @@ public class AppUserForm {
         this.password = password;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 }

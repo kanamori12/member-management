@@ -2,58 +2,68 @@
 
 <html lang="ja" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<head>
-    <meta charset="UTF-8">
-    <title>会員詳細</title>
-
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-
-</head>
+<head th:replace="~{fragments/head :: head('会員詳細')}"></head>
 
 <body>
 
     <header th:replace="~{fragments/header :: header('会員詳細', true)}"></header>
 
-    <div class="form-container">
+    <div class="container mt-4">
 
-        <div class="form-item">
-            <label>ID</label>
-            <span th:text="${member.id}"></span>
-        </div>
+        <div class="card form-card">
 
-        <div class="form-item">
-            <label>名前</label>
-            <span th:text="${member.name}"></span>
-        </div>
+            <div class="card-body">
 
-        <div class="form-item">
-            <label>年齢</label>
-            <span th:text="${member.age}"></span>
-        </div>
+                <table class="table">
 
-        <div class="form-item">
-            <label>会員種別</label>
-            <span th:text="${member.memberType}"></span>
-        </div>
+                    <tbody>
 
-        <div class="form-buttons">
+                        <tr>
+                            <th>ID</th>
+                            <td th:text="${member.id}"></td>
+                        </tr>
 
-            <a th:href="@{/list}" class="button button-secondary">
-                一覧に戻る
-            </a>
+                        <tr>
+                            <th>名前</th>
+                            <td th:text="${member.name}"></td>
+                        </tr>
 
-            <span sec:authorize="hasRole('ADMIN')">
+                        <tr>
+                            <th>年齢</th>
+                            <td th:text="${member.age}"></td>
+                        </tr>
 
-                <a th:href="@{/edit(id=${member.id})}" class="button button-secondary">
-                    編集
-                </a>
+                        <tr>
+                            <th>会員種別</th>
+                            <td th:text="${member.memberType}"></td>
+                        </tr>
 
-                <a th:href="@{/delete(id=${member.id})}" class="button button-danger"
-                    onclick="return confirm('この会員を削除しますか？');">
-                    削除
-                </a>
+                    </tbody>
 
-            </span>
+                </table>
+
+                <div class="d-flex gap-2">
+
+                    <a th:href="@{/list}" class="btn btn-outline-secondary">
+                        一覧に戻る
+                    </a>
+
+                    <span sec:authorize="hasAnyRole('ADMIN', 'USER')">
+
+                        <a th:href="@{/edit(id=${member.id})}" class="btn btn-outline-primary">
+                            編集
+                        </a>
+
+                        <a th:href="@{/delete(id=${member.id})}" class="btn btn-outline-danger"
+                            onclick="return confirm('この会員を削除しますか？');">
+                            削除
+                        </a>
+
+                    </span>
+
+                </div>
+
+            </div>
 
         </div>
 

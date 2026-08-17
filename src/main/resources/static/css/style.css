@@ -4,27 +4,26 @@
 
 body {
     font-family: sans-serif;
-    margin: 40px;
     background-color: #f5f5f5;
+    color: #333;
 }
+
+
+/* =========================
+   共通
+   ========================= */
 
 h1 {
     margin-bottom: 30px;
 }
 
+
 /* =========================
-   ページ上部
+   Bootstrap Navbar補助
    ========================= */
 
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    margin: 0;
+.navbar {
+    margin-bottom: 0;
 }
 
 
@@ -32,216 +31,8 @@ h1 {
    ログイン情報
    ========================= */
 
-.login-area {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
 .login-info {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    text-align: right;
-}
-
-.logout-button {
-    padding: 8px 15px;
-    border: none;
-    border-radius: 4px;
-    background-color: #ddd;
-    color: #333;
-    cursor: pointer;
-}
-
-.logout-button:hover {
-    background-color: #ccc;
-}
-
-.success-message {
-    color: green;
-    margin-bottom: 15px;
-}
-
-/* =========================
-   共通ボタン
-   ========================= */
-
-.button {
-    display: inline-block;
-    padding: 8px 20px;
-    border-radius: 4px;
-    text-decoration: none;
-    cursor: pointer;
-    box-sizing: border-box;
-}
-
-
-/* メイン操作 */
-
-.button-primary {
-    background-color: #333;
-    color: white;
-    border: none;
-}
-
-.button-primary:hover {
-    opacity: 0.8;
-}
-
-
-/* 通常操作 */
-
-.button-secondary {
-    background-color: #ddd;
-    color: #333;
-    border: none;
-}
-
-.button-secondary:hover {
-    background-color: #ccc;
-}
-
-
-/* 削除 */
-
-.button-danger {
-    background-color: #eee;
-    color: #333;
-    border: none;
-}
-
-.button-danger:hover {
-    background-color: #ccc;
-}
-
-
-/* =========================
-   検索フォーム
-   ========================= */
-
-.search-form {
-    background-color: white;
-    padding: 25px;
-    margin-bottom: 30px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-}
-
-.search-row {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.search-item {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.search-item input,
-.search-item select {
-    padding: 7px;
-    width: 160px;
-    box-sizing: border-box;
-}
-
-.search-buttons {
-    margin-top: 20px;
-}
-
-
-/* =========================
-   会員一覧
-   ========================= */
-
-.member-table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: white;
-}
-
-.member-table th {
-    background-color: #eee;
-    padding: 12px;
-    border: 1px solid #ccc;
-}
-
-.member-table td {
-    padding: 10px;
-    border: 1px solid #ccc;
-}
-
-.member-table tr:hover {
-    background-color: #f5f5f5;
-}
-
-
-/* =========================
-   検索結果0件
-   ========================= */
-
-.search-result-empty {
-    color: red;
-    margin-top: 20px;
-}
-
-
-/* =========================
-   登録・編集・詳細
-   ========================= */
-
-.form-container {
-    width: 500px;
-    background-color: white;
-    padding: 25px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-}
-
-.form-item {
-    margin-bottom: 20px;
-}
-
-.form-item label {
-    display: block;
-    margin-bottom: 5px;
-}
-
-.form-item input[type="text"],
-.form-item input[type="number"],
-.form-item select {
-    padding: 7px;
-    width: 250px;
-    box-sizing: border-box;
-}
-
-
-/* =========================
-   ラジオボタン
-   ========================= */
-
-.radio-group {
-    display: flex;
-    gap: 20px;
-}
-
-.radio-group label {
-    display: inline-block;
-}
-
-.radio-group input {
-    width: auto;
-}
-
-
-/* =========================
-   フォームボタン
-   ========================= */
-
-.form-buttons {
-    margin-top: 25px;
+    line-height: 1.4;
 }
 
 
@@ -252,5 +43,148 @@ h1 {
 .error-message {
     display: block;
     margin-top: 5px;
-    color: red;
+    color: #dc3545;
+}
+
+
+/* =========================
+   検索フォーム
+   ========================= */
+
+.search-card {
+    width: 100%;
+    max-width: none;
+}
+
+.search-card .form-label {
+    font-weight: 600;
+}
+
+
+/* =========================
+   登録・編集フォーム
+   ========================= */
+
+.form-card {
+    max-width: 600px;
+}
+
+.form-card .form-label {
+    font-weight: 600;
+}
+
+
+/* =========================
+   詳細画面
+   ========================= */
+
+.detail-card {
+    max-width: 700px;
+}
+
+.detail-card th {
+    width: 180px;
+    background-color: #f8f9fa;
+}
+
+
+/* =========================
+   一覧テーブル
+   ========================= */
+
+.table-responsive {
+    margin-bottom: 10px;
+}
+
+.table th {
+    white-space: nowrap;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* 操作ボタンの不要な折り返しを防ぐ */
+.table td:last-child {
+    white-space: nowrap;
+}
+
+
+/* =========================
+   ページング
+   ========================= */
+
+.pagination {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+
+/* =========================
+   ラジオボタン
+   ========================= */
+
+.radio-group {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.radio-group label {
+    margin-bottom: 0;
+}
+
+
+/* =========================
+   ログイン画面
+   ========================= */
+
+.auth-card {
+    max-width: 500px;
+}
+
+.auth-card .form-label {
+    font-weight: 600;
+}
+
+
+/* =========================
+   エラー画面
+   ========================= */
+
+.error-card {
+    max-width: 600px;
+}
+
+
+/* =========================
+   ユーザー管理フォーム
+   ========================= */
+
+.user-form-card {
+    max-width: 600px;
+}
+
+.user-form-card .form-label {
+    font-weight: 600;
+}
+
+
+/* =========================
+   小さい画面向け
+   ========================= */
+
+@media (max-width: 768px) {
+
+    .form-card,
+    .detail-card,
+    .auth-card,
+    .error-card,
+    .user-form-card {
+        max-width: 100%;
+    }
+
+    .table td:last-child {
+        white-space: normal;
+    }
 }

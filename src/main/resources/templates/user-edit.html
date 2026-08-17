@@ -1,75 +1,97 @@
 <!DOCTYPE html>
+
 <html lang="ja"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<head>
-    <meta charset="UTF-8">
-    <title>ログインユーザー編集</title>
-
-    <link rel="stylesheet"
-          th:href="@{/css/style.css}">
-</head>
+<head th:replace="~{fragments/head :: head('ログインユーザー編集')}"></head>
 
 <body>
 
-<header th:replace="~{fragments/header :: header('ログインユーザー編集', false)}"></header>
+    <header th:replace="~{fragments/header :: header('ログインユーザー編集', false)}"></header>
 
-<div class="form-container">
+    <div class="container-fluid px-4 py-4">
 
-    <form th:action="@{/users/update}"
-          th:object="${appUserEditForm}"
-          method="post">
+        <div class="card shadow-sm user-form-card">
 
-        <input type="hidden" th:field="*{id}">
+            <div class="card-body">
 
-        <div class="form-item">
+                <form th:action="@{/users/update}"
+                      th:object="${appUserEditForm}"
+                      method="post">
 
-            <label>ユーザー名</label>
+                    <!-- ID -->
+                    <input type="hidden"
+                           th:field="*{id}">
 
-            <input type="text"
-                   th:field="*{username}">
+                    <!-- ユーザー名 -->
+                    <div class="mb-3">
 
-            <span class="error-message"
-                  th:if="${#fields.hasErrors('username')}"
-                  th:errors="*{username}">
-            </span>
+                        <label class="form-label">
+                            ユーザー名
+                        </label>
+
+                        <input type="text"
+                               th:field="*{username}"
+                               class="form-control">
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('username')}"
+                             th:errors="*{username}">
+                        </div>
+
+                    </div>
+
+                    <!-- 権限 -->
+                    <div class="mb-4">
+
+                        <label class="form-label">
+                            権限
+                        </label>
+
+                        <select th:field="*{role}"
+                                class="form-select">
+
+                            <option value="USER">
+                                USER
+                            </option>
+
+                            <option value="ADMIN">
+                                ADMIN
+                            </option>
+
+                        </select>
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('role')}"
+                             th:errors="*{role}">
+                        </div>
+
+                    </div>
+
+                    <!-- ボタン -->
+                    <div class="d-flex gap-2">
+
+                        <button type="submit"
+                                class="btn btn-primary">
+                            更新
+                        </button>
+
+                        <a th:href="@{/users}"
+                           class="btn btn-outline-secondary">
+                            ログインユーザー一覧に戻る
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
 
         </div>
 
-        <div class="form-item">
-
-            <label>権限</label>
-
-            <select th:field="*{role}">
-                <option value="USER">USER</option>
-                <option value="ADMIN">ADMIN</option>
-            </select>
-
-            <span class="error-message"
-                  th:if="${#fields.hasErrors('role')}"
-                  th:errors="*{role}">
-            </span>
-
-        </div>
-
-        <div class="form-buttons">
-
-            <button type="submit"
-                    class="button button-primary">
-                更新
-            </button>
-
-            <a th:href="@{/users}"
-               class="button button-secondary">
-                一覧に戻る
-            </a>
-
-        </div>
-
-    </form>
-
-</div>
+    </div>
 
 </body>
+
 </html>

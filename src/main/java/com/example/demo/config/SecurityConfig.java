@@ -34,7 +34,7 @@ public class SecurityConfig {
                                 "/delete",
                                 "/users",
                                 "/users/register")
-                        .hasRole("ADMIN")
+                        .hasAnyRole("ADMIN", "USER")
 
                         .anyRequest()
                         .authenticated())

@@ -1,11 +1,12 @@
 package com.example.demo.service;
 
-import java.util.List;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import com.example.demo.exception.MemberNotFoundException;
 import com.example.demo.model.Member;
@@ -27,42 +28,83 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public List<Member> findAll() {
-        return memberRepository.findAll();
+    public Page<Member> findAll(
+            String username,
+            boolean admin,
+            Pageable pageable) {
+
+        if (admin) {
+            return memberRepository.findAll(pageable);
+        }
+
+        return memberRepository.findByOwnerUsername(
+                username,
+                pageable);
     }
 
     @Override
-    public List<Member> search(MemberSearchCondition condition) {
+    public Page<Member> search(
+            MemberSearchCondition condition,
+            String username,
+            boolean admin,
+            Pageable pageable) {
 
-        Specification<Member> specification = createSpecification(condition);
+        Specification<Member> specification = createSpecification(
+                condition,
+                username,
+                admin);
 
         Sort sort = createSort(condition.getSort());
 
-        return memberRepository.findAll(specification, sort);
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort);
+
+        return memberRepository.findAll(
+                specification,
+                sortedPageable);
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(
+            Long id,
+            String username,
+            boolean admin) {
 
-        Member member = memberRepository.findById(id)
-                .orElseThrow(() -> new MemberNotFoundException(id));
+        Member member = findById(id, username, admin);
 
         memberRepository.delete(member);
     }
 
     @Override
-    public Member findById(Long id) {
+    public Member findById(
+            Long id,
+            String username,
+            boolean admin) {
 
-        return memberRepository.findById(id)
+        if (admin) {
+
+            return memberRepository.findById(id)
+                    .orElseThrow(() -> new MemberNotFoundException(id));
+        }
+
+        return memberRepository
+                .findByIdAndOwnerUsername(id, username)
                 .orElseThrow(() -> new MemberNotFoundException(id));
     }
 
     @Override
     @Transactional
-    public void update(Member member) {
+    public void update(
+            Member member,
+            String username,
+            boolean admin) {
 
-        Member existingMember = memberRepository.findById(member.getId())
-                .orElseThrow(() -> new MemberNotFoundException(member.getId()));
+        Member existingMember = findById(
+                member.getId(),
+                username,
+                admin);
 
         existingMember.setName(member.getName());
         existingMember.setAge(member.getAge());
@@ -70,9 +112,19 @@ public class MemberServiceImpl implements MemberService {
     }
 
     private Specification<Member> createSpecification(
-            MemberSearchCondition condition) {
+            MemberSearchCondition condition,
+            String username,
+            boolean admin) {
 
         Specification<Member> specification = Specification.unrestricted();
+
+        // USERの場合だけ所有者条件を追加
+        if (!admin) {
+            specification = specification.and(
+                    (root, query, cb) -> cb.equal(
+                            root.get("owner").get("username"),
+                            username));
+        }
 
         // 名前
         if (condition.getName() != null

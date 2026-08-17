@@ -2,86 +2,69 @@
 
 <html lang="ja" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<head>
-    <meta charset="UTF-8">
-    <title>会員編集</title>
-
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-
-</head>
+<head th:replace="~{fragments/head :: head('会員編集')}"></head>
 
 <body>
 
     <header th:replace="~{fragments/header :: header('会員編集', true)}"></header>
 
-    <div class="form-container">
+    <div class="container mt-4">
 
-        <form th:action="@{/update}" th:object="${member}" method="post">
+        <div class="card form-card">
+            <div class="card-body">
 
-            <input type="hidden" th:field="*{id}">
+                <form th:action="@{/update}" th:object="${member}" method="post">
 
+                    <input type="hidden" th:field="*{id}">
 
-            <div class="form-item">
+                    <div class="mb-3">
+                        <label class="form-label">名前</label>
 
-                <label>名前</label>
+                        <input type="text" th:field="*{name}" class="form-control">
 
-                <input type="text" th:field="*{name}">
+                        <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
+                        </div>
+                    </div>
 
-                <span class="error-message" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
-                </span>
+                    <div class="mb-3">
+                        <label class="form-label">年齢</label>
 
-            </div>
+                        <input type="number" th:field="*{age}" min="0" class="form-control">
 
+                        <div class="text-danger" th:if="${#fields.hasErrors('age')}" th:errors="*{age}">
+                        </div>
+                    </div>
 
-            <div class="form-item">
+                    <div class="mb-3">
+                        <label class="form-label">会員種別</label>
 
-                <label>年齢</label>
+                        <select th:field="*{memberType}" class="form-select">
 
-                <input type="number" th:field="*{age}" min="0">
+                            <option value="一般">一般</option>
+                            <option value="ゴールド">ゴールド</option>
 
-                <span class="error-message" th:if="${#fields.hasErrors('age')}" th:errors="*{age}">
-                </span>
+                        </select>
 
-            </div>
+                        <div class="text-danger" th:if="${#fields.hasErrors('memberType')}" th:errors="*{memberType}">
+                        </div>
+                    </div>
 
+                    <div class="d-flex gap-2">
 
-            <div class="form-item">
+                        <button type="submit" class="btn btn-primary">
+                            更新
+                        </button>
 
-                <label>会員種別</label>
+                        <a th:href="@{/list}" class="btn btn-outline-secondary">
+                            一覧に戻る
+                        </a>
 
-                <div class="radio-group">
+                    </div>
 
-                    <label>
-                        <input type="radio" th:field="*{memberType}" value="一般">
-                        一般
-                    </label>
-
-                    <label>
-                        <input type="radio" th:field="*{memberType}" value="ゴールド">
-                        ゴールド
-                    </label>
-
-                </div>
-
-                <span class="error-message" th:if="${#fields.hasErrors('memberType')}" th:errors="*{memberType}">
-                </span>
-
-            </div>
-
-
-            <div class="form-buttons">
-
-                <button type="submit" class="button button-primary">
-                    更新
-                </button>
-
-                <a th:href="@{/list}" class="button button-secondary">
-                    一覧に戻る
-                </a>
+                </form>
 
             </div>
-
-        </form>
+        </div>
 
     </div>
 

@@ -26,4 +26,24 @@ public class GlobalExceptionHandler {
 
         return "error";
     }
+
+    @ExceptionHandler(AppUserNotFoundException.class)
+    public String handleAppUserNotFoundException(
+            AppUserNotFoundException e,
+            Model model) {
+
+        model.addAttribute("errorMessage", e.getMessage());
+
+        return "error";
+    }
+
+    @ExceptionHandler(UserOperationException.class)
+    public String handleUserOperationException(
+            UserOperationException e,
+            Model model) {
+
+        model.addAttribute("errorMessage", e.getMessage());
+
+        return "error";
+    }
 }
