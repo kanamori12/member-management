@@ -32,6 +32,7 @@
                 <form th:action="@{/login}"
                       method="post">
 
+                    <!-- ユーザー名 -->
                     <div class="mb-3">
 
                         <label class="form-label">
@@ -41,10 +42,12 @@
                         <input type="text"
                                name="username"
                                class="form-control"
-                               autocomplete="username">
+                               autocomplete="username"
+                               autofocus>
 
                     </div>
 
+                    <!-- パスワード -->
                     <div class="mb-4">
 
                         <label class="form-label">
@@ -58,6 +61,7 @@
 
                     </div>
 
+                    <!-- ログインボタン -->
                     <button type="submit"
                             class="btn btn-primary px-4">
                         ログイン

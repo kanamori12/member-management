@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 
-<html lang="ja" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="ja"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="~{fragments/head :: head('会員詳細')}"></head>
 
@@ -8,54 +10,64 @@
 
     <header th:replace="~{fragments/header :: header('会員詳細', true)}"></header>
 
-    <div class="container mt-4">
+    <div class="container-fluid px-4 py-4">
 
-        <div class="card form-card">
+        <div class="card shadow-sm detail-card">
 
             <div class="card-body">
 
-                <table class="table">
+                <!-- 会員情報 -->
+                <div class="table-responsive">
 
-                    <tbody>
+                    <table class="table align-middle mb-4">
 
-                        <tr>
-                            <th>ID</th>
-                            <td th:text="${member.id}"></td>
-                        </tr>
+                        <tbody>
 
-                        <tr>
-                            <th>名前</th>
-                            <td th:text="${member.name}"></td>
-                        </tr>
+                            <tr>
+                                <th>ID</th>
+                                <td th:text="${member.id}"></td>
+                            </tr>
 
-                        <tr>
-                            <th>年齢</th>
-                            <td th:text="${member.age}"></td>
-                        </tr>
+                            <tr>
+                                <th>名前</th>
+                                <td th:text="${member.name}"></td>
+                            </tr>
 
-                        <tr>
-                            <th>会員種別</th>
-                            <td th:text="${member.memberType}"></td>
-                        </tr>
+                            <tr>
+                                <th>年齢</th>
+                                <td th:text="${member.age}"></td>
+                            </tr>
 
-                    </tbody>
+                            <tr>
+                                <th>会員種別</th>
+                                <td th:text="${member.memberType}"></td>
+                            </tr>
 
-                </table>
+                        </tbody>
 
-                <div class="d-flex gap-2">
+                    </table>
 
-                    <a th:href="@{/list}" class="btn btn-outline-secondary">
+                </div>
+
+                <!-- 操作ボタン -->
+                <div class="d-flex gap-2 flex-wrap">
+
+                    <a th:href="@{/list}"
+                       class="btn btn-outline-secondary">
                         一覧に戻る
                     </a>
 
-                    <span sec:authorize="hasAnyRole('ADMIN', 'USER')">
+                    <span sec:authorize="hasAnyRole('ADMIN', 'USER')"
+                          class="d-flex gap-2">
 
-                        <a th:href="@{/edit(id=${member.id})}" class="btn btn-outline-primary">
+                        <a th:href="@{/edit(id=${member.id})}"
+                           class="btn btn-outline-primary">
                             編集
                         </a>
 
-                        <a th:href="@{/delete(id=${member.id})}" class="btn btn-outline-danger"
-                            onclick="return confirm('この会員を削除しますか？');">
+                        <a th:href="@{/delete(id=${member.id})}"
+                           class="btn btn-outline-danger"
+                           onclick="return confirm('この会員を削除しますか？');">
                             削除
                         </a>
 

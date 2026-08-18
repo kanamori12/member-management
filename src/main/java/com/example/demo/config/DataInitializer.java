@@ -1,16 +1,22 @@
 package com.example.demo.config;
 
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.example.demo.model.Role;
 import com.example.demo.repository.AppUserRepository;
 import com.example.demo.service.AppUserService;
-import com.example.demo.model.Role;
 
 @Configuration
 public class DataInitializer {
+
+    @Value("${app.initial-admin.username}")
+    private String initialAdminUsername;
+
+    @Value("${app.initial-admin.password}")
+    private String initialAdminPassword;
 
     @Bean
     public CommandLineRunner initializeUser(
@@ -19,18 +25,15 @@ public class DataInitializer {
 
         return args -> {
 
-            if (appUserRepository.findByUsername("admin").isEmpty()) {
-                appUserService.register(
-                        "admin",
-                        "password",
-                        Role.ADMIN);
-            }
+            // 初期ADMINが存在しない場合だけ作成
+            if (appUserRepository
+                    .findByUsername(initialAdminUsername)
+                    .isEmpty()) {
 
-            if (appUserRepository.findByUsername("user").isEmpty()) {
                 appUserService.register(
-                        "user",
-                        "password",
-                        Role.USER);
+                        initialAdminUsername,
+                        initialAdminPassword,
+                        Role.ADMIN);
             }
         };
     }

@@ -9,7 +9,7 @@
 
     <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
 
-        <div class="container">
+        <div class="container-fluid px-4">
 
             <!-- 画面タイトル -->
             <span class="navbar-brand"
@@ -17,9 +17,10 @@
                 会員管理システム
             </span>
 
+            <!-- 右側メニュー -->
             <div class="d-flex align-items-center gap-3">
 
-                <!-- ADMINのみ -->
+                <!-- ADMINのみ表示 -->
                 <a sec:authorize="hasRole('ADMIN')"
                    th:if="${showUserManagement}"
                    th:href="@{/users}"

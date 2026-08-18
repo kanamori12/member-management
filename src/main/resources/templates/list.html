@@ -26,6 +26,7 @@
 
                 <!-- 名前 -->
                 <div class="col-lg-4 col-md-6">
+
                     <label class="form-label">
                         名前
                     </label>
@@ -34,10 +35,12 @@
                            th:field="*{name}"
                            class="form-control"
                            placeholder="名前を入力">
+
                 </div>
 
                 <!-- 年齢 -->
                 <div class="col-lg-2 col-md-3">
+
                     <label class="form-label">
                         年齢
                     </label>
@@ -47,10 +50,12 @@
                            min="0"
                            class="form-control"
                            placeholder="例：30">
+
                 </div>
 
                 <!-- 会員種別 -->
                 <div class="col-lg-3 col-md-6">
+
                     <label class="form-label">
                         会員種別
                     </label>
@@ -58,15 +63,25 @@
                     <select th:field="*{memberType}"
                             class="form-select">
 
-                        <option value="">すべて</option>
-                        <option value="一般">一般</option>
-                        <option value="ゴールド">ゴールド</option>
+                        <option value="">
+                            すべて
+                        </option>
+
+                        <option value="一般">
+                            一般
+                        </option>
+
+                        <option value="ゴールド">
+                            ゴールド
+                        </option>
 
                     </select>
+
                 </div>
 
                 <!-- 並び順 -->
                 <div class="col-lg-3 col-md-6">
+
                     <label class="form-label">
                         並び順
                     </label>
@@ -74,18 +89,30 @@
                     <select th:field="*{sort}"
                             class="form-select">
 
-                        <option value="idAsc">ID昇順</option>
-                        <option value="idDesc">ID降順</option>
-                        <option value="nameAsc">名前昇順</option>
-                        <option value="ageAsc">年齢昇順</option>
+                        <option value="idAsc">
+                            ID昇順
+                        </option>
+
+                        <option value="idDesc">
+                            ID降順
+                        </option>
+
+                        <option value="nameAsc">
+                            名前昇順
+                        </option>
+
+                        <option value="ageAsc">
+                            年齢昇順
+                        </option>
 
                     </select>
+
                 </div>
 
             </div>
 
             <!-- 検索ボタン -->
-            <div class="d-flex gap-2 mt-4">
+            <div class="d-flex gap-2 mt-4 flex-wrap">
 
                 <button type="submit"
                         class="btn btn-primary px-4">
@@ -103,13 +130,22 @@
 
 
         <!-- =========================
-             検索結果0件
+             0件メッセージ
              ========================= -->
 
+        <!-- 検索結果0件 -->
         <div class="alert alert-info"
              th:if="${searched and members.isEmpty()}">
 
             検索結果がありません。
+
+        </div>
+
+        <!-- 通常一覧0件 -->
+        <div class="alert alert-info"
+             th:if="${!searched and members.isEmpty()}">
+
+            登録されている会員がありません。
 
         </div>
 
@@ -118,7 +154,8 @@
              会員一覧
              ========================= -->
 
-        <div class="card shadow-sm">
+        <div class="card shadow-sm"
+             th:if="${!members.isEmpty()}">
 
             <div class="table-responsive">
 
@@ -196,25 +233,19 @@
 
             <ul class="pagination justify-content-center">
 
-
                 <!-- ＜ 通常一覧 -->
-
                 <li class="page-item"
                     th:if="${memberPage.hasPrevious() and !searched}">
 
                     <a class="page-link"
                        th:href="@{/list(
                            page=${memberPage.number - 1})}">
-
                         ＜
-
                     </a>
 
                 </li>
 
-
                 <!-- ＜ 検索結果 -->
-
                 <li class="page-item"
                     th:if="${memberPage.hasPrevious() and searched}">
 
@@ -225,24 +256,19 @@
                            age=${condition.age},
                            memberType=${condition.memberType},
                            sort=${condition.sort})}">
-
                         ＜
-
                     </a>
 
                 </li>
 
 
                 <!-- ページ番号 -->
-
                 <th:block th:each="pageNumber :
                     ${#numbers.sequence(
                         0,
                         memberPage.totalPages - 1)}">
 
-
                     <!-- 通常一覧 -->
-
                     <li class="page-item"
                         th:if="${!searched}"
                         th:classappend="${pageNumber == memberPage.number}
@@ -256,9 +282,7 @@
 
                     </li>
 
-
                     <!-- 検索結果 -->
-
                     <li class="page-item"
                         th:if="${searched}"
                         th:classappend="${pageNumber == memberPage.number}
@@ -280,23 +304,18 @@
 
 
                 <!-- ＞ 通常一覧 -->
-
                 <li class="page-item"
                     th:if="${memberPage.hasNext() and !searched}">
 
                     <a class="page-link"
                        th:href="@{/list(
                            page=${memberPage.number + 1})}">
-
                         ＞
-
                     </a>
 
                 </li>
 
-
                 <!-- ＞ 検索結果 -->
-
                 <li class="page-item"
                     th:if="${memberPage.hasNext() and searched}">
 
@@ -307,9 +326,7 @@
                            age=${condition.age},
                            memberType=${condition.memberType},
                            sort=${condition.sort})}">
-
                         ＞
-
                     </a>
 
                 </li>

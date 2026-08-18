@@ -14,22 +14,22 @@
 
         <!-- 成功メッセージ -->
 
-        <div class="alert alert-success"
+        <div class="alert alert-success py-2"
              th:if="${param.registered}">
             ログインユーザーを登録しました。
         </div>
 
-        <div class="alert alert-success"
+        <div class="alert alert-success py-2"
              th:if="${param.updated}">
             ログインユーザーを更新しました。
         </div>
 
-        <div class="alert alert-success"
+        <div class="alert alert-success py-2"
              th:if="${param.deleted}">
             ログインユーザーを削除しました。
         </div>
 
-        <div class="alert alert-success"
+        <div class="alert alert-success py-2"
              th:if="${param.passwordChanged}">
             パスワードを変更しました。
         </div>
@@ -62,7 +62,11 @@
 
                             <td th:text="${user.username}"></td>
 
-                            <td th:text="${user.role}"></td>
+                            <td>
+                                <span class="badge text-bg-secondary"
+                                      th:text="${user.role}">
+                                </span>
+                            </td>
 
                             <td>
 
