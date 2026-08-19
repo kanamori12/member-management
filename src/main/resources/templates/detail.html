@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="ja"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="ja" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="~{fragments/head :: head('会員詳細')}"></head>
 
@@ -43,6 +41,26 @@
                                 <td th:text="${member.memberType}"></td>
                             </tr>
 
+                            <tr>
+                                <th>タグ</th>
+                                <td>
+
+                                    <div class="d-flex gap-1 flex-wrap" th:if="${!member.tags.isEmpty()}">
+
+                                        <span th:each="tag : ${member.tags}" class="badge text-bg-secondary"
+                                            th:text="${tag.name}">
+                                            タグ
+                                        </span>
+
+                                    </div>
+
+                                    <span class="text-muted" th:if="${member.tags.isEmpty()}">
+                                        -
+                                    </span>
+
+                                </td>
+                            </tr>
+
                         </tbody>
 
                     </table>
@@ -52,22 +70,18 @@
                 <!-- 操作ボタン -->
                 <div class="d-flex gap-2 flex-wrap">
 
-                    <a th:href="@{/list}"
-                       class="btn btn-outline-secondary">
+                    <a th:href="@{/list}" class="btn btn-outline-secondary">
                         一覧に戻る
                     </a>
 
-                    <span sec:authorize="hasAnyRole('ADMIN', 'USER')"
-                          class="d-flex gap-2">
+                    <span sec:authorize="hasAnyRole('ADMIN', 'USER')" class="d-flex gap-2">
 
-                        <a th:href="@{/edit(id=${member.id})}"
-                           class="btn btn-outline-primary">
+                        <a th:href="@{/edit(id=${member.id})}" class="btn btn-outline-primary">
                             編集
                         </a>
 
-                        <a th:href="@{/delete(id=${member.id})}"
-                           class="btn btn-outline-danger"
-                           onclick="return confirm('この会員を削除しますか？');">
+                        <a th:href="@{/delete(id=${member.id})}" class="btn btn-outline-danger"
+                            onclick="return confirm('この会員を削除しますか？');">
                             削除
                         </a>
 

@@ -26,6 +26,7 @@ import org.springframework.data.jpa.domain.Specification;
 import com.example.demo.exception.MemberNotFoundException;
 import com.example.demo.model.Member;
 import com.example.demo.model.MemberSearchCondition;
+import com.example.demo.model.Tag;
 import com.example.demo.repository.MemberRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,11 +35,17 @@ public class MemberServiceImplTest {
     @Mock
     private MemberRepository memberRepository;
 
+    @Mock
+    private TagService tagService;
+
     private MemberServiceImpl memberService;
 
     @BeforeEach
     void setUp() {
-        memberService = new MemberServiceImpl(memberRepository);
+
+        memberService = new MemberServiceImpl(
+                memberRepository,
+                tagService);
     }
 
 
@@ -47,7 +54,7 @@ public class MemberServiceImplTest {
     // =========================
 
     @Test
-    void register_会員を登録できる() {
+    void register_タグなしで会員を登録できる() {
 
         Member member = createMember(
                 1L,
@@ -56,6 +63,127 @@ public class MemberServiceImplTest {
                 "一般");
 
         memberService.register(member);
+
+        verify(memberRepository)
+                .save(member);
+
+        verify(tagService, never())
+                .findOrCreate(any(String.class));
+    }
+
+    @Test
+    void register_タグが空白でも会員を登録できる() {
+
+        Member member = createMember(
+                1L,
+                "田中",
+                30,
+                "一般");
+
+        member.setTagNames("   ");
+
+        memberService.register(member);
+
+        assertEquals(
+                0,
+                member.getTags().size());
+
+        verify(tagService, never())
+                .findOrCreate(any(String.class));
+
+        verify(memberRepository)
+                .save(member);
+    }
+
+    @Test
+    void register_タグ付きで会員を登録できる() {
+
+        Member member = createMember(
+                1L,
+                "田中",
+                30,
+                "一般");
+
+        member.setTagNames(
+                "重要, 横浜, 要フォロー");
+
+        Tag important = createTag(
+                1L,
+                "重要");
+
+        Tag yokohama = createTag(
+                2L,
+                "横浜");
+
+        Tag follow = createTag(
+                3L,
+                "要フォロー");
+
+        when(tagService.findOrCreate("重要"))
+                .thenReturn(important);
+
+        when(tagService.findOrCreate("横浜"))
+                .thenReturn(yokohama);
+
+        when(tagService.findOrCreate("要フォロー"))
+                .thenReturn(follow);
+
+        memberService.register(member);
+
+        assertEquals(
+                3,
+                member.getTags().size());
+
+        verify(tagService)
+                .findOrCreate("重要");
+
+        verify(tagService)
+                .findOrCreate("横浜");
+
+        verify(tagService)
+                .findOrCreate("要フォロー");
+
+        verify(memberRepository)
+                .save(member);
+    }
+
+    @Test
+    void register_タグの空白文字と重複を除去して登録できる() {
+
+        Member member = createMember(
+                1L,
+                "田中",
+                30,
+                "一般");
+
+        member.setTagNames(
+                " 重要 , , 横浜 , 重要 ");
+
+        Tag important = createTag(
+                1L,
+                "重要");
+
+        Tag yokohama = createTag(
+                2L,
+                "横浜");
+
+        when(tagService.findOrCreate("重要"))
+                .thenReturn(important);
+
+        when(tagService.findOrCreate("横浜"))
+                .thenReturn(yokohama);
+
+        memberService.register(member);
+
+        assertEquals(
+                2,
+                member.getTags().size());
+
+        verify(tagService)
+                .findOrCreate("重要");
+
+        verify(tagService)
+                .findOrCreate("横浜");
 
         verify(memberRepository)
                 .save(member);
@@ -105,11 +233,15 @@ public class MemberServiceImplTest {
 
         assertEquals(
                 "田中",
-                result.getContent().get(0).getName());
+                result.getContent()
+                        .get(0)
+                        .getName());
 
         assertEquals(
                 "佐藤",
-                result.getContent().get(1).getName());
+                result.getContent()
+                        .get(1)
+                        .getName());
 
         verify(memberRepository)
                 .findAll(pageable);
@@ -155,7 +287,9 @@ public class MemberServiceImplTest {
 
         assertEquals(
                 "田中",
-                result.getContent().get(0).getName());
+                result.getContent()
+                        .get(0)
+                        .getName());
 
         verify(memberRepository)
                 .findByOwnerUsername(
@@ -209,7 +343,8 @@ public class MemberServiceImplTest {
                 result.getContent().size());
 
         ArgumentCaptor<Pageable> captor =
-                ArgumentCaptor.forClass(Pageable.class);
+                ArgumentCaptor.forClass(
+                        Pageable.class);
 
         verify(memberRepository)
                 .findAll(
@@ -258,7 +393,8 @@ public class MemberServiceImplTest {
                 pageable);
 
         ArgumentCaptor<Pageable> captor =
-                ArgumentCaptor.forClass(Pageable.class);
+                ArgumentCaptor.forClass(
+                        Pageable.class);
 
         verify(memberRepository)
                 .findAll(
@@ -298,7 +434,8 @@ public class MemberServiceImplTest {
                 pageable);
 
         ArgumentCaptor<Pageable> captor =
-                ArgumentCaptor.forClass(Pageable.class);
+                ArgumentCaptor.forClass(
+                        Pageable.class);
 
         verify(memberRepository)
                 .findAll(
@@ -338,7 +475,8 @@ public class MemberServiceImplTest {
                 pageable);
 
         ArgumentCaptor<Pageable> captor =
-                ArgumentCaptor.forClass(Pageable.class);
+                ArgumentCaptor.forClass(
+                        Pageable.class);
 
         verify(memberRepository)
                 .findAll(
@@ -378,7 +516,8 @@ public class MemberServiceImplTest {
                 pageable);
 
         ArgumentCaptor<Pageable> captor =
-                ArgumentCaptor.forClass(Pageable.class);
+                ArgumentCaptor.forClass(
+                        Pageable.class);
 
         verify(memberRepository)
                 .findAll(
@@ -410,7 +549,8 @@ public class MemberServiceImplTest {
                 "一般");
 
         when(memberRepository.findById(1L))
-                .thenReturn(Optional.of(member));
+                .thenReturn(
+                        Optional.of(member));
 
         Member result =
                 memberService.findById(
@@ -442,7 +582,8 @@ public class MemberServiceImplTest {
     void findById_ADMINで存在しない会員なら例外になる() {
 
         when(memberRepository.findById(999L))
-                .thenReturn(Optional.empty());
+                .thenReturn(
+                        Optional.empty());
 
         assertThrows(
                 MemberNotFoundException.class,
@@ -465,7 +606,8 @@ public class MemberServiceImplTest {
                 .findByIdAndOwnerUsername(
                         1L,
                         "user"))
-                .thenReturn(Optional.of(member));
+                .thenReturn(
+                        Optional.of(member));
 
         Member result =
                 memberService.findById(
@@ -497,7 +639,8 @@ public class MemberServiceImplTest {
                 .findByIdAndOwnerUsername(
                         2L,
                         "user"))
-                .thenReturn(Optional.empty());
+                .thenReturn(
+                        Optional.empty());
 
         assertThrows(
                 MemberNotFoundException.class,
@@ -530,7 +673,8 @@ public class MemberServiceImplTest {
                         "ゴールド");
 
         when(memberRepository.findById(1L))
-                .thenReturn(Optional.of(existingMember));
+                .thenReturn(
+                        Optional.of(existingMember));
 
         memberService.update(
                 updateMember,
@@ -548,6 +692,10 @@ public class MemberServiceImplTest {
         assertEquals(
                 "ゴールド",
                 existingMember.getMemberType());
+
+        assertEquals(
+                0,
+                existingMember.getTags().size());
     }
 
     @Test
@@ -571,7 +719,8 @@ public class MemberServiceImplTest {
                 .findByIdAndOwnerUsername(
                         1L,
                         "user"))
-                .thenReturn(Optional.of(existingMember));
+                .thenReturn(
+                        Optional.of(existingMember));
 
         memberService.update(
                 updateMember,
@@ -592,6 +741,122 @@ public class MemberServiceImplTest {
     }
 
     @Test
+    void update_タグも更新できる() {
+
+        Member existingMember =
+                createMember(
+                        1L,
+                        "田中",
+                        30,
+                        "一般");
+
+        Member updateMember =
+                createMember(
+                        1L,
+                        "田中太郎",
+                        31,
+                        "ゴールド");
+
+        updateMember.setTagNames(
+                "重要, VIP");
+
+        Tag important =
+                createTag(
+                        1L,
+                        "重要");
+
+        Tag vip =
+                createTag(
+                        2L,
+                        "VIP");
+
+        when(memberRepository.findById(1L))
+                .thenReturn(
+                        Optional.of(existingMember));
+
+        when(tagService.findOrCreate("重要"))
+                .thenReturn(important);
+
+        when(tagService.findOrCreate("VIP"))
+                .thenReturn(vip);
+
+        memberService.update(
+                updateMember,
+                "admin",
+                true);
+
+        assertEquals(
+                "田中太郎",
+                existingMember.getName());
+
+        assertEquals(
+                31,
+                existingMember.getAge());
+
+        assertEquals(
+                "ゴールド",
+                existingMember.getMemberType());
+
+        assertEquals(
+                2,
+                existingMember.getTags().size());
+
+        assertEquals(
+                "重要, VIP",
+                existingMember.getTagNames());
+
+        verify(tagService)
+                .findOrCreate("重要");
+
+        verify(tagService)
+                .findOrCreate("VIP");
+    }
+
+    @Test
+    void update_タグを空欄にするとタグをすべて解除できる() {
+
+        Member existingMember =
+                createMember(
+                        1L,
+                        "田中",
+                        30,
+                        "一般");
+
+        Tag important =
+                createTag(
+                        1L,
+                        "重要");
+
+        existingMember.getTags()
+                .add(important);
+
+        Member updateMember =
+                createMember(
+                        1L,
+                        "田中",
+                        30,
+                        "一般");
+
+        updateMember.setTagNames("");
+
+        when(memberRepository.findById(1L))
+                .thenReturn(
+                        Optional.of(existingMember));
+
+        memberService.update(
+                updateMember,
+                "admin",
+                true);
+
+        assertEquals(
+                0,
+                existingMember.getTags().size());
+
+        verify(tagService, never())
+                .findOrCreate(any(String.class));
+    }
+
+    @Test
     void update_USERが他人の会員を更新しようとすると例外になる() {
 
         Member updateMember =
@@ -605,7 +870,8 @@ public class MemberServiceImplTest {
                 .findByIdAndOwnerUsername(
                         2L,
                         "user"))
-                .thenReturn(Optional.empty());
+                .thenReturn(
+                        Optional.empty());
 
         assertThrows(
                 MemberNotFoundException.class,
@@ -623,14 +889,16 @@ public class MemberServiceImplTest {
     @Test
     void delete_ADMINなら会員を削除できる() {
 
-        Member member = createMember(
-                1L,
-                "田中",
-                30,
-                "一般");
+        Member member =
+                createMember(
+                        1L,
+                        "田中",
+                        30,
+                        "一般");
 
         when(memberRepository.findById(1L))
-                .thenReturn(Optional.of(member));
+                .thenReturn(
+                        Optional.of(member));
 
         memberService.delete(
                 1L,
@@ -645,7 +913,8 @@ public class MemberServiceImplTest {
     void delete_ADMINで存在しない会員なら例外になる() {
 
         when(memberRepository.findById(999L))
-                .thenReturn(Optional.empty());
+                .thenReturn(
+                        Optional.empty());
 
         assertThrows(
                 MemberNotFoundException.class,
@@ -661,17 +930,19 @@ public class MemberServiceImplTest {
     @Test
     void delete_USERなら自分の会員を削除できる() {
 
-        Member member = createMember(
-                1L,
-                "田中",
-                30,
-                "一般");
+        Member member =
+                createMember(
+                        1L,
+                        "田中",
+                        30,
+                        "一般");
 
         when(memberRepository
                 .findByIdAndOwnerUsername(
                         1L,
                         "user"))
-                .thenReturn(Optional.of(member));
+                .thenReturn(
+                        Optional.of(member));
 
         memberService.delete(
                 1L,
@@ -689,7 +960,8 @@ public class MemberServiceImplTest {
                 .findByIdAndOwnerUsername(
                         2L,
                         "user"))
-                .thenReturn(Optional.empty());
+                .thenReturn(
+                        Optional.empty());
 
         assertThrows(
                 MemberNotFoundException.class,
@@ -713,7 +985,8 @@ public class MemberServiceImplTest {
             Integer age,
             String memberType) {
 
-        Member member = new Member();
+        Member member =
+                new Member();
 
         member.setId(id);
         member.setName(name);
@@ -721,5 +994,18 @@ public class MemberServiceImplTest {
         member.setMemberType(memberType);
 
         return member;
+    }
+
+    private Tag createTag(
+            Long id,
+            String name) {
+
+        Tag tag =
+                new Tag();
+
+        tag.setId(id);
+        tag.setName(name);
+
+        return tag;
     }
 }

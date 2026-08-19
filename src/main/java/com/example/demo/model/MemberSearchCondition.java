@@ -10,6 +10,8 @@ public class MemberSearchCondition {
 
     private String sort = "idAsc";
 
+    private String tagName;
+
     public MemberSearchCondition() {
     }
 
@@ -43,5 +45,13 @@ public class MemberSearchCondition {
 
     public void setSort(String sort) {
         this.sort = sort;
+    }
+
+    public String getTagName() {
+        return tagName;
+    }
+
+    public void setTagName(String tagName) {
+        this.tagName = tagName;
     }
 }

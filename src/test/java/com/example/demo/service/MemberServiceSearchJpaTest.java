@@ -12,13 +12,16 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.example.demo.model.AppUser;
 import com.example.demo.model.Member;
 import com.example.demo.model.MemberSearchCondition;
 import com.example.demo.model.Role;
+import com.example.demo.model.Tag;
 import com.example.demo.repository.AppUserRepository;
 import com.example.demo.repository.MemberRepository;
+import com.example.demo.repository.TagRepository;
 
 @DataJpaTest
 @Import(MemberServiceImpl.class)
@@ -31,16 +34,44 @@ class MemberServiceSearchJpaTest {
     private AppUserRepository appUserRepository;
 
     @Autowired
+    private TagRepository tagRepository;
+
+    @Autowired
     private MemberServiceImpl memberService;
+
+    /*
+     * MemberServiceImplのコンストラクタでTagServiceが必要なため、
+     * Spring Context上にMock Beanを登録する。
+     *
+     * このテストでは検索処理のみを実行するので、
+     * TagService自体の処理は使用しない。
+     */
+    @MockitoBean
+    private TagService tagService;
 
     private AppUser user1;
     private AppUser user2;
 
+    private Tag importantTag;
+    private Tag yokohamaTag;
+    private Tag followTag;
+
+
     @BeforeEach
     void setUp() {
 
+        /*
+         * member_tagはMember側が所有しているため、
+         * Memberを先に削除してからTagを削除する。
+         */
         memberRepository.deleteAll();
+        tagRepository.deleteAll();
         appUserRepository.deleteAll();
+
+
+        // =========================
+        // USER作成
+        // =========================
 
         user1 = new AppUser();
         user1.setUsername("user1");
@@ -49,6 +80,7 @@ class MemberServiceSearchJpaTest {
 
         user1 = appUserRepository.save(user1);
 
+
         user2 = new AppUser();
         user2.setUsername("user2");
         user2.setPassword("password");
@@ -56,33 +88,110 @@ class MemberServiceSearchJpaTest {
 
         user2 = appUserRepository.save(user2);
 
-        memberRepository.save(
+
+        // =========================
+        // Tag作成
+        // =========================
+
+        importantTag = createTag("重要");
+        yokohamaTag = createTag("横浜");
+        followTag = createTag("要フォロー");
+
+
+        // =========================
+        // Member作成
+        // =========================
+
+        /*
+         * user1
+         *
+         * 田中太郎
+         *   - 重要
+         *   - 横浜
+         */
+        Member tanakaTaro =
                 createMember(
                         "田中太郎",
                         30,
                         "一般",
-                        user1));
+                        user1);
 
-        memberRepository.save(
+        tanakaTaro.getTags()
+                .add(importantTag);
+
+        tanakaTaro.getTags()
+                .add(yokohamaTag);
+
+        memberRepository.save(tanakaTaro);
+
+
+        /*
+         * user1
+         *
+         * 田中花子
+         *   - 重要
+         *   - 要フォロー
+         */
+        Member tanakaHanako =
                 createMember(
                         "田中花子",
                         20,
                         "ゴールド",
-                        user1));
+                        user1);
 
-        memberRepository.save(
+        tanakaHanako.getTags()
+                .add(importantTag);
+
+        tanakaHanako.getTags()
+                .add(followTag);
+
+        memberRepository.save(tanakaHanako);
+
+
+        /*
+         * user2
+         *
+         * 佐藤一郎
+         *   - 重要
+         */
+        Member satoIchiro =
                 createMember(
                         "佐藤一郎",
                         30,
                         "一般",
-                        user2));
+                        user2);
 
-        memberRepository.save(
+        satoIchiro.getTags()
+                .add(importantTag);
+
+        memberRepository.save(satoIchiro);
+
+
+        /*
+         * user2
+         *
+         * 山田次郎
+         *   - 横浜
+         */
+        Member yamadaJiro =
                 createMember(
                         "山田次郎",
                         40,
                         "ゴールド",
-                        user2));
+                        user2);
+
+        yamadaJiro.getTags()
+                .add(yokohamaTag);
+
+        memberRepository.save(yamadaJiro);
+
+
+        /*
+         * INSERTをこの時点でDBへ反映しておく。
+         *
+         * これにより検索時のSQLが分かりやすくなる。
+         */
+        memberRepository.flush();
     }
 
 
@@ -128,7 +237,7 @@ class MemberServiceSearchJpaTest {
 
 
     // =========================
-    // 名前のtrim
+    // 名前trim
     // =========================
 
     @Test
@@ -178,6 +287,7 @@ class MemberServiceSearchJpaTest {
                 result.getTotalElements());
 
         for (Member member : result.getContent()) {
+
             assertEquals(
                     30,
                     member.getAge());
@@ -210,10 +320,181 @@ class MemberServiceSearchJpaTest {
                 result.getTotalElements());
 
         for (Member member : result.getContent()) {
+
             assertEquals(
                     "ゴールド",
                     member.getMemberType());
         }
+    }
+
+
+    // =========================
+    // タグ検索
+    // =========================
+
+    @Test
+    void search_タグ名で完全一致検索できる() {
+
+        MemberSearchCondition condition =
+                new MemberSearchCondition();
+
+        condition.setTagName("重要");
+        condition.setSort("idAsc");
+
+        Page<Member> result =
+                memberService.search(
+                        condition,
+                        "admin",
+                        true,
+                        PageRequest.of(0, 10));
+
+        /*
+         * 重要タグ：
+         *
+         * 田中太郎
+         * 田中花子
+         * 佐藤一郎
+         */
+        assertEquals(
+                3,
+                result.getTotalElements());
+
+        List<String> names =
+                result.getContent()
+                        .stream()
+                        .map(Member::getName)
+                        .toList();
+
+        assertEquals(
+                List.of(
+                        "田中太郎",
+                        "田中花子",
+                        "佐藤一郎"),
+                names);
+    }
+
+
+    @Test
+    void search_タグ名の前後空白を除去して検索できる() {
+
+        MemberSearchCondition condition =
+                new MemberSearchCondition();
+
+        condition.setTagName("  横浜  ");
+        condition.setSort("idAsc");
+
+        Page<Member> result =
+                memberService.search(
+                        condition,
+                        "admin",
+                        true,
+                        PageRequest.of(0, 10));
+
+        /*
+         * 横浜タグ：
+         *
+         * 田中太郎
+         * 山田次郎
+         */
+        assertEquals(
+                2,
+                result.getTotalElements());
+    }
+
+
+    @Test
+    void search_タグ名が空白なら検索条件に含めない() {
+
+        MemberSearchCondition condition =
+                new MemberSearchCondition();
+
+        condition.setTagName("   ");
+        condition.setSort("idAsc");
+
+        Page<Member> result =
+                memberService.search(
+                        condition,
+                        "admin",
+                        true,
+                        PageRequest.of(0, 10));
+
+        assertEquals(
+                4,
+                result.getTotalElements());
+    }
+
+
+    // =========================
+    // USER + タグ
+    // =========================
+
+    @Test
+    void search_USERなら自分の会員だけタグ検索できる() {
+
+        MemberSearchCondition condition =
+                new MemberSearchCondition();
+
+        condition.setTagName("重要");
+        condition.setSort("idAsc");
+
+        Page<Member> result =
+                memberService.search(
+                        condition,
+                        "user1",
+                        false,
+                        PageRequest.of(0, 10));
+
+        /*
+         * 「重要」タグ自体は
+         * user2の佐藤一郎にも付いている。
+         *
+         * しかしuser1で検索しているので、
+         *
+         * 田中太郎
+         * 田中花子
+         *
+         * の2件だけ。
+         */
+        assertEquals(
+                2,
+                result.getTotalElements());
+
+        for (Member member : result.getContent()) {
+
+            assertEquals(
+                    "user1",
+                    member.getOwner()
+                            .getUsername());
+        }
+    }
+
+
+    @Test
+    void search_USERは同じタグを持つ他人の会員を取得できない() {
+
+        MemberSearchCondition condition =
+                new MemberSearchCondition();
+
+        condition.setTagName("重要");
+        condition.setName("佐藤");
+        condition.setSort("idAsc");
+
+        Page<Member> result =
+                memberService.search(
+                        condition,
+                        "user1",
+                        false,
+                        PageRequest.of(0, 10));
+
+        /*
+         * 佐藤一郎は「重要」を持っているが、
+         * ownerはuser2。
+         *
+         * user1では取得できない。
+         */
+        assertEquals(
+                0,
+                result.getTotalElements());
     }
 
 
@@ -244,7 +525,49 @@ class MemberServiceSearchJpaTest {
                 result.getTotalElements());
 
         Member member =
-                result.getContent().get(0);
+                result.getContent()
+                        .get(0);
+
+        assertEquals(
+                "田中花子",
+                member.getName());
+
+        assertEquals(
+                20,
+                member.getAge());
+
+        assertEquals(
+                "ゴールド",
+                member.getMemberType());
+    }
+
+
+    @Test
+    void search_名前年齢会員種別タグをAND検索できる() {
+
+        MemberSearchCondition condition =
+                new MemberSearchCondition();
+
+        condition.setName("田中");
+        condition.setAge(20);
+        condition.setMemberType("ゴールド");
+        condition.setTagName("要フォロー");
+        condition.setSort("idAsc");
+
+        Page<Member> result =
+                memberService.search(
+                        condition,
+                        "admin",
+                        true,
+                        PageRequest.of(0, 10));
+
+        assertEquals(
+                1,
+                result.getTotalElements());
+
+        Member member =
+                result.getContent()
+                        .get(0);
 
         assertEquals(
                 "田中花子",
@@ -319,7 +642,7 @@ class MemberServiceSearchJpaTest {
 
 
     // =========================
-    // USER + 名前検索
+    // USER + 名前
     // =========================
 
     @Test
@@ -447,7 +770,8 @@ class MemberServiceSearchJpaTest {
 
         assertEquals(
                 2,
-                result.getContent().size());
+                result.getContent()
+                        .size());
 
         assertEquals(
                 4,
@@ -469,7 +793,8 @@ class MemberServiceSearchJpaTest {
             String memberType,
             AppUser owner) {
 
-        Member member = new Member();
+        Member member =
+                new Member();
 
         member.setName(name);
         member.setAge(age);
@@ -477,5 +802,16 @@ class MemberServiceSearchJpaTest {
         member.setOwner(owner);
 
         return member;
+    }
+
+
+    private Tag createTag(String name) {
+
+        Tag tag =
+                new Tag();
+
+        tag.setName(name);
+
+        return tagRepository.save(tag);
     }
 }
