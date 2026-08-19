@@ -404,6 +404,78 @@ public class AppUserServiceTest {
                 .save(appUser);
     }
 
+    // ★追加：ADMIN → ADMIN の短絡評価分岐
+    @Test
+    void update_ADMINをADMINのまま更新できる() {
+
+        AppUser appUser = new AppUser();
+        appUser.setId(2L);
+        appUser.setUsername("admin2");
+        appUser.setRole(Role.ADMIN);
+
+        AppUserEditForm form = new AppUserEditForm();
+        form.setId(2L);
+        form.setUsername("admin2-new");
+        form.setRole(Role.ADMIN);
+
+        when(appUserRepository.findById(2L))
+                .thenReturn(Optional.of(appUser));
+
+        appUserService.update(
+                form,
+                "admin1");
+
+        assertEquals(
+                "admin2-new",
+                appUser.getUsername());
+
+        assertEquals(
+                Role.ADMIN,
+                appUser.getRole());
+
+        verify(appUserRepository)
+                .save(appUser);
+
+        verify(appUserRepository, never())
+                .countByRole(Role.ADMIN);
+    }
+
+    // ★追加：自分自身でもADMINを維持するなら変更可能
+    @Test
+    void update_自分自身でもADMIN権限を維持するなら更新できる() {
+
+        AppUser appUser = new AppUser();
+        appUser.setId(1L);
+        appUser.setUsername("admin");
+        appUser.setRole(Role.ADMIN);
+
+        AppUserEditForm form = new AppUserEditForm();
+        form.setId(1L);
+        form.setUsername("admin");
+        form.setRole(Role.ADMIN);
+
+        when(appUserRepository.findById(1L))
+                .thenReturn(Optional.of(appUser));
+
+        appUserService.update(
+                form,
+                "admin");
+
+        assertEquals(
+                "admin",
+                appUser.getUsername());
+
+        assertEquals(
+                Role.ADMIN,
+                appUser.getRole());
+
+        verify(appUserRepository)
+                .save(appUser);
+
+        verify(appUserRepository, never())
+                .countByRole(Role.ADMIN);
+    }
+
 
     // =========================
     // delete
