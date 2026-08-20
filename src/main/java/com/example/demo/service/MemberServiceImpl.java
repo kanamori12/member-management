@@ -21,283 +21,288 @@ import com.example.demo.repository.MemberRepository;
 @Service
 public class MemberServiceImpl implements MemberService {
 
-    private final MemberRepository memberRepository;
-    private final TagService tagService;
+        private final MemberRepository memberRepository;
+        private final TagService tagService;
 
-    public MemberServiceImpl(
-            MemberRepository memberRepository,
-            TagService tagService) {
+        public MemberServiceImpl(
+                        MemberRepository memberRepository,
+                        TagService tagService) {
 
-        this.memberRepository = memberRepository;
-        this.tagService = tagService;
-    }
-
-    // =========================
-    // 会員登録
-    // =========================
-
-    @Override
-    @Transactional
-    public void register(Member member) {
-
-        setTags(member);
-
-        memberRepository.save(member);
-    }
-
-    // =========================
-    // 会員一覧
-    // =========================
-
-    @Override
-    public Page<Member> findAll(
-            String username,
-            boolean admin,
-            Pageable pageable) {
-
-        if (admin) {
-            return memberRepository.findAll(pageable);
+                this.memberRepository = memberRepository;
+                this.tagService = tagService;
         }
 
-        return memberRepository.findByOwnerUsername(
-                username,
-                pageable);
-    }
+        // =========================
+        // 会員登録
+        // =========================
 
-    // =========================
-    // 会員検索
-    // =========================
+        @Override
+        @Transactional
+        public void register(Member member) {
 
-    @Override
-    public Page<Member> search(
-            MemberSearchCondition condition,
-            String username,
-            boolean admin,
-            Pageable pageable) {
+                setTags(member);
 
-        Specification<Member> specification = createSpecification(
-                condition,
-                username,
-                admin);
-
-        Sort sort = createSort(
-                condition.getSort());
-
-        Pageable sortedPageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sort);
-
-        return memberRepository.findAll(
-                specification,
-                sortedPageable);
-    }
-
-    // =========================
-    // 会員削除
-    // =========================
-
-    @Override
-    public void delete(
-            Long id,
-            String username,
-            boolean admin) {
-
-        Member member = findById(
-                id,
-                username,
-                admin);
-
-        memberRepository.delete(member);
-    }
-
-    // =========================
-    // IDから会員取得
-    // =========================
-
-    @Override
-    public Member findById(
-            Long id,
-            String username,
-            boolean admin) {
-
-        if (admin) {
-
-            return memberRepository
-                    .findById(id)
-                    .orElseThrow(() -> new MemberNotFoundException(id));
+                memberRepository.save(member);
         }
 
-        return memberRepository
-                .findByIdAndOwnerUsername(
-                        id,
-                        username)
-                .orElseThrow(() -> new MemberNotFoundException(id));
-    }
+        // =========================
+        // 会員一覧
+        // =========================
 
-    // =========================
-    // 会員更新
-    // =========================
+        @Override
+        public Page<Member> findAll(
+                        String username,
+                        boolean admin,
+                        Pageable pageable) {
 
-    @Override
-    @Transactional
-    public void update(
-            Member member,
-            String username,
-            boolean admin) {
+                if (admin) {
+                        return memberRepository.findAll(pageable);
+                }
 
-        Member existingMember = findById(
-                member.getId(),
-                username,
-                admin);
-
-        existingMember.setName(
-                member.getName());
-
-        existingMember.setAge(
-                member.getAge());
-
-        existingMember.setMemberType(
-                member.getMemberType());
-
-        existingMember.setTagNames(
-                member.getTagNames());
-
-        setTags(existingMember);
-    }
-
-    // =========================
-    // タグ設定
-    // =========================
-
-    private void setTags(Member member) {
-
-        if (member.getTagNames() == null
-                || member.getTagNames().isBlank()) {
-
-            member.getTags().clear();
-
-            return;
+                return memberRepository.findByOwnerUsername(
+                                username,
+                                pageable);
         }
 
-        Set<Tag> tags = Arrays.stream(
-                member.getTagNames()
-                        .split(","))
-                .map(String::trim)
-                .filter(name -> !name.isBlank())
-                .distinct()
-                .map(tagService::findOrCreate)
-                .collect(Collectors.toSet());
+        // =========================
+        // 会員検索
+        // =========================
 
-        member.setTags(tags);
-    }
+        @Override
+        public Page<Member> search(
+                        MemberSearchCondition condition,
+                        String username,
+                        boolean admin,
+                        Pageable pageable) {
 
-    // =========================
-    // 検索条件作成
-    // =========================
+                Specification<Member> specification = createSpecification(
+                                condition,
+                                username,
+                                admin);
 
-    private Specification<Member> createSpecification(
-            MemberSearchCondition condition,
-            String username,
-            boolean admin) {
+                Sort sort = createSort(
+                                condition.getSort());
 
-        Specification<Member> specification = Specification.unrestricted();
+                Pageable sortedPageable = PageRequest.of(
+                                pageable.getPageNumber(),
+                                pageable.getPageSize(),
+                                sort);
 
-        // USERの場合だけ所有者条件を追加
-        if (!admin) {
-
-            specification = specification.and(
-                    (root, query, cb) -> cb.equal(
-                            root.get("owner")
-                                    .get("username"),
-                            username));
+                return memberRepository.findAll(
+                                specification,
+                                sortedPageable);
         }
 
-        // 名前
-        if (condition.getName() != null
-                && !condition.getName().isBlank()) {
+        // =========================
+        // 会員削除
+        // =========================
 
-            String name = condition.getName().trim();
+        @Override
+        public void delete(
+                        Long id,
+                        String username,
+                        boolean admin) {
 
-            specification = specification.and(
-                    (root, query, cb) -> cb.like(
-                            root.get("name"),
-                            "%" + name + "%"));
+                Member member = findById(
+                                id,
+                                username,
+                                admin);
+
+                memberRepository.delete(member);
         }
 
-        // 年齢
-        if (condition.getAge() != null) {
+        // =========================
+        // IDから会員取得
+        // =========================
 
-            Integer age = condition.getAge();
+        @Override
+        public Member findById(
+                        Long id,
+                        String username,
+                        boolean admin) {
 
-            specification = specification.and(
-                    (root, query, cb) -> cb.equal(
-                            root.get("age"),
-                            age));
+                if (admin) {
+
+                        return memberRepository
+                                        .findById(id)
+                                        .orElseThrow(() -> new MemberNotFoundException(id));
+                }
+
+                return memberRepository
+                                .findByIdAndOwnerUsername(
+                                                id,
+                                                username)
+                                .orElseThrow(() -> new MemberNotFoundException(id));
         }
 
-        // 会員種別
-        if (condition.getMemberType() != null
-                && !condition.getMemberType().isBlank()) {
+        // =========================
+        // 会員更新
+        // =========================
 
-            String memberType = condition.getMemberType();
+        @Override
+        @Transactional
+        public void update(
+                        Member member,
+                        String username,
+                        boolean admin) {
 
-            specification = specification.and(
-                    (root, query, cb) -> cb.equal(
-                            root.get("memberType"),
-                            memberType));
+                Member existingMember = findById(
+                                member.getId(),
+                                username,
+                                admin);
+
+                existingMember.setName(
+                                member.getName());
+
+                existingMember.setAge(
+                                member.getAge());
+
+                existingMember.setMemberType(
+                                member.getMemberType());
+
+                existingMember.setTagNames(
+                                member.getTagNames());
+
+                if (member.getProfileImageName() != null) {
+                        existingMember.setProfileImageName(
+                                        member.getProfileImageName());
+                }
+
+                setTags(existingMember);
         }
 
-        // タグ
-        if (condition.getTagName() != null
-                && !condition.getTagName().isBlank()) {
+        // =========================
+        // タグ設定
+        // =========================
 
-            String tagName = condition.getTagName().trim();
+        private void setTags(Member member) {
 
-            specification = specification.and(
-                    (root, query, cb) -> {
+                if (member.getTagNames() == null
+                                || member.getTagNames().isBlank()) {
 
-                        var tags = root.join("tags");
+                        member.getTags().clear();
 
-                        return cb.equal(
-                                tags.get("name"),
-                                tagName);
-                    });
+                        return;
+                }
+
+                Set<Tag> tags = Arrays.stream(
+                                member.getTagNames()
+                                                .split(","))
+                                .map(String::trim)
+                                .filter(name -> !name.isBlank())
+                                .distinct()
+                                .map(tagService::findOrCreate)
+                                .collect(Collectors.toSet());
+
+                member.setTags(tags);
         }
 
-        return specification;
-    }
+        // =========================
+        // 検索条件作成
+        // =========================
 
-    // =========================
-    // 並び順
-    // =========================
+        private Specification<Member> createSpecification(
+                        MemberSearchCondition condition,
+                        String username,
+                        boolean admin) {
 
-    private Sort createSort(String sort) {
+                Specification<Member> specification = Specification.unrestricted();
 
-        if ("idDesc".equals(sort)) {
+                // USERの場合だけ所有者条件を追加
+                if (!admin) {
 
-            return Sort.by(
-                    Sort.Direction.DESC,
-                    "id");
+                        specification = specification.and(
+                                        (root, query, cb) -> cb.equal(
+                                                        root.get("owner")
+                                                                        .get("username"),
+                                                        username));
+                }
+
+                // 名前
+                if (condition.getName() != null
+                                && !condition.getName().isBlank()) {
+
+                        String name = condition.getName().trim();
+
+                        specification = specification.and(
+                                        (root, query, cb) -> cb.like(
+                                                        root.get("name"),
+                                                        "%" + name + "%"));
+                }
+
+                // 年齢
+                if (condition.getAge() != null) {
+
+                        Integer age = condition.getAge();
+
+                        specification = specification.and(
+                                        (root, query, cb) -> cb.equal(
+                                                        root.get("age"),
+                                                        age));
+                }
+
+                // 会員種別
+                if (condition.getMemberType() != null
+                                && !condition.getMemberType().isBlank()) {
+
+                        String memberType = condition.getMemberType();
+
+                        specification = specification.and(
+                                        (root, query, cb) -> cb.equal(
+                                                        root.get("memberType"),
+                                                        memberType));
+                }
+
+                // タグ
+                if (condition.getTagName() != null
+                                && !condition.getTagName().isBlank()) {
+
+                        String tagName = condition.getTagName().trim();
+
+                        specification = specification.and(
+                                        (root, query, cb) -> {
+
+                                                var tags = root.join("tags");
+
+                                                return cb.equal(
+                                                                tags.get("name"),
+                                                                tagName);
+                                        });
+                }
+
+                return specification;
         }
 
-        if ("nameAsc".equals(sort)) {
+        // =========================
+        // 並び順
+        // =========================
 
-            return Sort.by(
-                    Sort.Direction.ASC,
-                    "name");
+        private Sort createSort(String sort) {
+
+                if ("idDesc".equals(sort)) {
+
+                        return Sort.by(
+                                        Sort.Direction.DESC,
+                                        "id");
+                }
+
+                if ("nameAsc".equals(sort)) {
+
+                        return Sort.by(
+                                        Sort.Direction.ASC,
+                                        "name");
+                }
+
+                if ("ageAsc".equals(sort)) {
+
+                        return Sort.by(
+                                        Sort.Direction.ASC,
+                                        "age");
+                }
+
+                // idAsc または値が不明な場合
+                return Sort.by(
+                                Sort.Direction.ASC,
+                                "id");
         }
-
-        if ("ageAsc".equals(sort)) {
-
-            return Sort.by(
-                    Sort.Direction.ASC,
-                    "age");
-        }
-
-        // idAsc または値が不明な場合
-        return Sort.by(
-                Sort.Direction.ASC,
-                "id");
-    }
 }

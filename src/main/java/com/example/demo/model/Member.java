@@ -50,6 +50,8 @@ public class Member {
     @Transient
     private String tagNames;
 
+    private String profileImageName;
+
     public Member() {
     }
 
@@ -107,5 +109,13 @@ public class Member {
 
     public void setTagNames(String tagNames) {
         this.tagNames = tagNames;
+    }
+
+    public String getProfileImageName() {
+        return profileImageName;
+    }
+
+    public void setProfileImageName(String profileImageName) {
+        this.profileImageName = profileImageName;
     }
 }

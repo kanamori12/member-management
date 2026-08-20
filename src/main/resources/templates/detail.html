@@ -14,6 +14,20 @@
 
             <div class="card-body">
 
+                <div class="mb-4 text-center" th:if="${member.profileImageName != null}">
+
+                    <img th:src="@{/uploads/{filename}(
+            filename=${member.profileImageName})}" alt="プロフィール画像" class="img-thumbnail"
+                        style="max-width: 200px; max-height: 200px;">
+                </div>
+                <div class="mb-4 text-center" th:if="${member.profileImageName == null}">
+
+                    <span class="text-muted">
+                        プロフィール画像は登録されていません。
+                    </span>
+
+                </div>
+
                 <!-- 会員情報 -->
                 <div class="table-responsive">
 
@@ -70,18 +84,76 @@
                 <!-- 操作ボタン -->
                 <div class="d-flex gap-2 flex-wrap">
 
-                    <a th:href="@{/list}" class="btn btn-outline-secondary">
+                    <!-- =========================
+         通常一覧へ戻る
+         ========================= -->
+                    <a th:if="${!searched}" th:href="@{/list(
+            page=${page})}" class="btn btn-outline-secondary">
                         一覧に戻る
                     </a>
 
+                    <!-- =========================
+         検索結果へ戻る
+         ========================= -->
+                    <a th:if="${searched}" th:href="@{/search(
+            page=${page},
+            name=${name},
+            age=${age},
+            memberType=${memberType},
+            tagName=${tagName},
+            sort=${sort})}" class="btn btn-outline-secondary">
+                        一覧に戻る
+                    </a>
+
+
                     <span sec:authorize="hasAnyRole('ADMIN', 'USER')" class="d-flex gap-2">
 
-                        <a th:href="@{/edit(id=${member.id})}" class="btn btn-outline-primary">
+                        <!-- =========================
+             通常一覧から編集
+             ========================= -->
+                        <a th:if="${!searched}" th:href="@{/edit(
+                id=${member.id},
+                page=${page})}" class="btn btn-outline-primary">
                             編集
                         </a>
 
-                        <a th:href="@{/delete(id=${member.id})}" class="btn btn-outline-danger"
-                            onclick="return confirm('この会員を削除しますか？');">
+                        <!-- =========================
+             検索結果から編集
+             ========================= -->
+                        <a th:if="${searched}" th:href="@{/edit(
+                id=${member.id},
+                page=${page},
+                searched=true,
+                name=${name},
+                age=${age},
+                memberType=${memberType},
+                tagName=${tagName},
+                sort=${sort})}" class="btn btn-outline-primary">
+                            編集
+                        </a>
+
+
+                        <!-- =========================
+             通常一覧から削除
+             ========================= -->
+                        <a th:if="${!searched}" th:href="@{/delete(
+                id=${member.id},
+                page=${page})}" class="btn btn-outline-danger" onclick="return confirm('この会員を削除しますか？');">
+                            削除
+                        </a>
+
+                        <!-- =========================
+             検索結果から削除
+             ========================= -->
+                        <a th:if="${searched}" th:href="@{/delete(
+                id=${member.id},
+                page=${page},
+                searched=true,
+                name=${name},
+                age=${age},
+                memberType=${memberType},
+                tagName=${tagName},
+                sort=${sort})}" class="btn btn-outline-danger" onclick="return confirm('この会員を削除しますか？');">
                             削除
                         </a>
 

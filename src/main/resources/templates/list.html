@@ -14,13 +14,12 @@
         <!-- =========================
              検索フォーム
              ========================= -->
-
         <form th:action="@{/search}" th:object="${condition}" method="get" class="card shadow-sm p-4 mb-4 search-card">
 
             <div class="row g-3">
 
                 <!-- 名前 -->
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-3 col-md-6">
 
                     <label class="form-label">
                         名前
@@ -37,12 +36,12 @@
                         年齢
                     </label>
 
-                    <input type="number" th:field="*{age}" min="0" class="form-control" placeholder="例：30">
+                    <input type="number" th:field="*{age}" min="0" max="120" class="form-control" placeholder="例：30">
 
                 </div>
 
                 <!-- 会員種別 -->
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-2 col-md-6">
 
                     <label class="form-label">
                         会員種別
@@ -78,7 +77,7 @@
                 </div>
 
                 <!-- 並び順 -->
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-2 col-md-6">
 
                     <label class="form-label">
                         並び順
@@ -108,7 +107,6 @@
 
             </div>
 
-            <!-- 検索ボタン -->
             <div class="d-flex gap-2 mt-4 flex-wrap">
 
                 <button type="submit" class="btn btn-primary px-4">
@@ -125,17 +123,47 @@
 
 
         <!-- =========================
+             処理完了メッセージ
+             ========================= -->
+
+        <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.registered}">
+
+            会員情報を登録しました。
+
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+            </button>
+
+        </div>
+
+        <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.updated}">
+
+            会員情報を更新しました。
+
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+            </button>
+
+        </div>
+
+        <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${param.deleted}">
+
+            会員情報を削除しました。
+
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+            </button>
+
+        </div>
+
+
+        <!-- =========================
              0件メッセージ
              ========================= -->
 
-        <!-- 検索結果0件 -->
         <div class="alert alert-info" th:if="${searched and members.isEmpty()}">
 
             検索結果がありません。
 
         </div>
 
-        <!-- 通常一覧0件 -->
         <div class="alert alert-info" th:if="${!searched and members.isEmpty()}">
 
             登録されている会員がありません。
@@ -146,37 +174,104 @@
         <!-- =========================
              会員一覧
              ========================= -->
-
         <div class="card shadow-sm" th:if="${!members.isEmpty()}">
 
             <div class="table-responsive">
 
-                <table class="table table-striped table-hover align-middle mb-0">
+                <table class="table table-striped table-hover align-middle mb-0"
+                    style="table-layout: fixed; width: 100%;">
 
                     <thead class="table-light">
 
                         <tr>
-                            <th>ID</th>
-                            <th>名前</th>
-                            <th>年齢</th>
-                            <th>会員種別</th>
-                            <th>タグ</th>
-                            <th>操作</th>
+                            <th class="text-center" style="width: 80px;">
+
+                            </th>
+
+                            <th style="width: 80px;">
+                                ID
+                            </th>
+
+                            <th style="width: 160px;">
+                                名前
+                            </th>
+
+                            <th style="width: 100px;">
+                                年齢
+                            </th>
+
+                            <th style="width: 140px;">
+                                会員種別
+                            </th>
+
+                            <th>
+                                タグ
+                            </th>
+
+                            <th style="width: 280px;">
+                                操作
+                            </th>
                         </tr>
 
                     </thead>
 
                     <tbody>
 
-                        <tr th:each="member : ${members}">
+                        <tr th:each="member : ${members}" style="height: 64px;">
 
-                            <td th:text="${member.id}"></td>
+                            <!-- =========================
+                                 プロフィール画像
+                                 ========================= -->
+                            <td class="text-center p-0">
 
-                            <td th:text="${member.name}"></td>
+                                <div class="d-flex align-items-center justify-content-center" style="
+                                         height: 64px;
+                                         min-height: 64px;
+                                     ">
 
-                            <td th:text="${member.age}"></td>
+                                    <!-- 画像あり -->
+                                    <img th:if="${member.profileImageName != null
+                                                and !member.profileImageName.isBlank()}" th:src="@{/uploads/{filename}(
+                                                filename=${member.profileImageName})}" alt="プロフィール画像"
+                                        class="rounded-circle border" style="
+                                             width: 48px;
+                                             height: 48px;
+                                             min-width: 48px;
+                                             min-height: 48px;
+                                             object-fit: cover;
+                                             display: block;
+                                         ">
 
-                            <td th:text="${member.memberType}"></td>
+                                    <!-- 画像なし -->
+                                    <span th:if="${member.profileImageName == null
+                                                 or member.profileImageName.isBlank()}" class="text-muted">
+                                        -
+                                    </span>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- ID -->
+                            <td th:text="${member.id}">
+                            </td>
+
+
+                            <!-- 名前 -->
+                            <td th:text="${member.name}">
+                            </td>
+
+
+                            <!-- 年齢 -->
+                            <td th:text="${member.age}">
+                            </td>
+
+
+                            <!-- 会員種別 -->
+                            <td th:text="${member.memberType}">
+                            </td>
+
 
                             <!-- タグ -->
                             <td>
@@ -196,23 +291,72 @@
 
                             </td>
 
+
                             <!-- 操作 -->
                             <td>
 
                                 <div class="d-flex gap-2 flex-wrap">
 
-                                    <!-- 詳細 -->
-                                    <a th:href="@{/detail(id=${member.id})}" class="btn btn-outline-primary btn-sm">
+                                    <!-- 通常一覧：詳細 -->
+                                    <a th:if="${!searched}" th:href="@{/detail(
+                                            id=${member.id},
+                                            page=${memberPage.number})}" class="btn btn-outline-primary btn-sm">
                                         詳細
                                     </a>
 
-                                    <!-- 編集 -->
-                                    <a th:href="@{/edit(id=${member.id})}" class="btn btn-outline-secondary btn-sm">
+                                    <!-- 検索結果：詳細 -->
+                                    <a th:if="${searched}" th:href="@{/detail(
+                                            id=${member.id},
+                                            page=${memberPage.number},
+                                            searched=true,
+                                            name=${condition.name},
+                                            age=${condition.age},
+                                            memberType=${condition.memberType},
+                                            tagName=${condition.tagName},
+                                            sort=${condition.sort})}" class="btn btn-outline-primary btn-sm">
+                                        詳細
+                                    </a>
+
+
+                                    <!-- 通常一覧：編集 -->
+                                    <a th:if="${!searched}" th:href="@{/edit(
+                                            id=${member.id},
+                                            page=${memberPage.number})}" class="btn btn-outline-secondary btn-sm">
                                         編集
                                     </a>
 
-                                    <!-- 削除 -->
-                                    <a th:href="@{/delete(id=${member.id})}" class="btn btn-outline-danger btn-sm"
+                                    <!-- 検索結果：編集 -->
+                                    <a th:if="${searched}" th:href="@{/edit(
+                                            id=${member.id},
+                                            page=${memberPage.number},
+                                            searched=true,
+                                            name=${condition.name},
+                                            age=${condition.age},
+                                            memberType=${condition.memberType},
+                                            tagName=${condition.tagName},
+                                            sort=${condition.sort})}" class="btn btn-outline-secondary btn-sm">
+                                        編集
+                                    </a>
+
+
+                                    <!-- 通常一覧：削除 -->
+                                    <a th:if="${!searched}" th:href="@{/delete(
+                                            id=${member.id},
+                                            page=${memberPage.number})}" class="btn btn-outline-danger btn-sm"
+                                        onclick="return confirm('この会員を削除しますか？');">
+                                        削除
+                                    </a>
+
+                                    <!-- 検索結果：削除 -->
+                                    <a th:if="${searched}" th:href="@{/delete(
+                                            id=${member.id},
+                                            page=${memberPage.number},
+                                            searched=true,
+                                            name=${condition.name},
+                                            age=${condition.age},
+                                            memberType=${condition.memberType},
+                                            tagName=${condition.tagName},
+                                            sort=${condition.sort})}" class="btn btn-outline-danger btn-sm"
                                         onclick="return confirm('この会員を削除しますか？');">
                                         削除
                                     </a>
@@ -233,92 +377,172 @@
 
 
         <!-- =========================
-             ページング
-             ========================= -->
-
+     ページング
+     ========================= -->
         <nav th:if="${memberPage.totalPages > 1}" aria-label="ページ切り替え" class="mt-4">
 
             <ul class="pagination justify-content-center">
 
-                <!-- ＜ 通常一覧 -->
+
+                <!-- =========================
+             ≪ 先頭ページ：通常一覧
+             ========================= -->
+                <li class="page-item" th:if="${memberPage.number > 0 and !searched}">
+
+                    <a class="page-link" th:href="@{/list(
+                    page=0)}">
+                        ≪
+                    </a>
+
+                </li>
+
+
+                <!-- =========================
+             ≪ 先頭ページ：検索結果
+             ========================= -->
+                <li class="page-item" th:if="${memberPage.number > 0 and searched}">
+
+                    <a class="page-link" th:href="@{/search(
+                    page=0,
+                    name=${condition.name},
+                    age=${condition.age},
+                    memberType=${condition.memberType},
+                    tagName=${condition.tagName},
+                    sort=${condition.sort})}">
+                        ≪
+                    </a>
+
+                </li>
+
+
+                <!-- =========================
+             ＜ 前ページ：通常一覧
+             ========================= -->
                 <li class="page-item" th:if="${memberPage.hasPrevious() and !searched}">
 
                     <a class="page-link" th:href="@{/list(
-                           page=${memberPage.number - 1})}">
+                    page=${memberPage.number - 1})}">
                         ＜
                     </a>
 
                 </li>
 
-                <!-- ＜ 検索結果 -->
+
+                <!-- =========================
+             ＜ 前ページ：検索結果
+             ========================= -->
                 <li class="page-item" th:if="${memberPage.hasPrevious() and searched}">
 
                     <a class="page-link" th:href="@{/search(
-                           page=${memberPage.number - 1},
-                           name=${condition.name},
-                           age=${condition.age},
-                           memberType=${condition.memberType},
-                           tagName=${condition.tagName},
-                           sort=${condition.sort})}">
+                    page=${memberPage.number - 1},
+                    name=${condition.name},
+                    age=${condition.age},
+                    memberType=${condition.memberType},
+                    tagName=${condition.tagName},
+                    sort=${condition.sort})}">
                         ＜
                     </a>
 
                 </li>
 
-                <!-- ページ番号 -->
+
+                <!-- =========================
+             ページ番号
+             ========================= -->
                 <th:block th:each="pageNumber :
-                    ${#numbers.sequence(
-                        0,
-                        memberPage.totalPages - 1)}">
+            ${#numbers.sequence(
+                0,
+                memberPage.totalPages - 1)}">
+
 
                     <!-- 通常一覧 -->
                     <li class="page-item" th:if="${!searched}" th:classappend="${pageNumber == memberPage.number}
-                            ? 'active'">
+                        ? 'active'">
 
                         <a class="page-link" th:href="@{/list(
-                               page=${pageNumber})}" th:text="${pageNumber + 1}">
+                        page=${pageNumber})}" th:text="${pageNumber + 1}">
                         </a>
 
                     </li>
 
+
                     <!-- 検索結果 -->
                     <li class="page-item" th:if="${searched}" th:classappend="${pageNumber == memberPage.number}
-                            ? 'active'">
+                        ? 'active'">
 
                         <a class="page-link" th:href="@{/search(
-                               page=${pageNumber},
-                               name=${condition.name},
-                               age=${condition.age},
-                               memberType=${condition.memberType},
-                               tagName=${condition.tagName},
-                               sort=${condition.sort})}" th:text="${pageNumber + 1}">
+                        page=${pageNumber},
+                        name=${condition.name},
+                        age=${condition.age},
+                        memberType=${condition.memberType},
+                        tagName=${condition.tagName},
+                        sort=${condition.sort})}" th:text="${pageNumber + 1}">
                         </a>
 
                     </li>
 
                 </th:block>
 
-                <!-- ＞ 通常一覧 -->
+
+                <!-- =========================
+             ＞ 次ページ：通常一覧
+             ========================= -->
                 <li class="page-item" th:if="${memberPage.hasNext() and !searched}">
 
                     <a class="page-link" th:href="@{/list(
-                           page=${memberPage.number + 1})}">
+                    page=${memberPage.number + 1})}">
                         ＞
                     </a>
 
                 </li>
 
-                <!-- ＞ 検索結果 -->
+
+                <!-- =========================
+             ＞ 次ページ：検索結果
+             ========================= -->
                 <li class="page-item" th:if="${memberPage.hasNext() and searched}">
 
                     <a class="page-link" th:href="@{/search(
-                           page=${memberPage.number + 1},
-                           name=${condition.name},
-                           age=${condition.age},
-                           memberType=${condition.memberType},
-                           tagName=${condition.tagName},
-                           sort=${condition.sort})}">
+                    page=${memberPage.number + 1},
+                    name=${condition.name},
+                    age=${condition.age},
+                    memberType=${condition.memberType},
+                    tagName=${condition.tagName},
+                    sort=${condition.sort})}">
                         ＞
+                    </a>
+
+                </li>
+
+
+                <!-- =========================
+             ≫ 最終ページ：通常一覧
+             ========================= -->
+                <li class="page-item" th:if="${memberPage.number < memberPage.totalPages - 1
+                   and !searched}">
+
+                    <a class="page-link" th:href="@{/list(
+                    page=${memberPage.totalPages - 1})}">
+                        ≫
+                    </a>
+
+                </li>
+
+
+                <!-- =========================
+             ≫ 最終ページ：検索結果
+             ========================= -->
+                <li class="page-item" th:if="${memberPage.number < memberPage.totalPages - 1
+                   and searched}">
+
+                    <a class="page-link" th:href="@{/search(
+                    page=${memberPage.totalPages - 1},
+                    name=${condition.name},
+                    age=${condition.age},
+                    memberType=${condition.memberType},
+                    tagName=${condition.tagName},
+                    sort=${condition.sort})}">
+                        ≫
                     </a>
 
                 </li>
@@ -327,11 +551,9 @@
 
         </nav>
 
-
         <!-- =========================
              新規登録
              ========================= -->
-
         <div sec:authorize="hasAnyRole('ADMIN', 'USER')" class="mt-3">
 
             <a th:href="@{/}" class="btn btn-primary">

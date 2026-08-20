@@ -1,9 +1,11 @@
 package com.example.demo.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -23,12 +26,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.model.AppUser;
 import com.example.demo.model.Member;
 import com.example.demo.model.MemberSearchCondition;
 import com.example.demo.model.Role;
 import com.example.demo.service.AppUserService;
+import com.example.demo.service.FileStorageService;
 import com.example.demo.service.MemberService;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,6 +46,9 @@ class MemberControllerTest {
     private AppUserService appUserService;
 
     @Mock
+    private FileStorageService fileStorageService;
+
+    @Mock
     private Model model;
 
     @Mock
@@ -49,13 +57,18 @@ class MemberControllerTest {
     @Mock
     private Authentication authentication;
 
+    @Mock
+    private MultipartFile profileImage;
+
     private MemberController controller;
 
     @BeforeEach
     void setUp() {
+
         controller = new MemberController(
                 memberService,
-                appUserService);
+                appUserService,
+                fileStorageService);
     }
 
     // =========================
@@ -65,7 +78,8 @@ class MemberControllerTest {
     @Test
     void index_登録画面を表示できる() {
 
-        String result = controller.index(model);
+        String result =
+                controller.index(model);
 
         assertEquals(
                 "index",
@@ -82,7 +96,7 @@ class MemberControllerTest {
     // =========================
 
     @Test
-    void register_正常なら会員を登録して一覧へリダイレクトする() {
+    void register_正常なら画像付き会員を登録できる() {
 
         Member member = createMember(
                 1L,
@@ -104,21 +118,74 @@ class MemberControllerTest {
         when(appUserService.findByUsername("user"))
                 .thenReturn(loginUser);
 
-        String result = controller.register(
-                member,
-                bindingResult,
-                authentication);
+        when(fileStorageService.saveProfileImage(profileImage))
+                .thenReturn("profile.jpg");
+
+        String result =
+                controller.register(
+                        member,
+                        bindingResult,
+                        profileImage,
+                        authentication);
 
         assertEquals(
-                "redirect:/list",
+                "redirect:/list?registered=true",
                 result);
 
         assertEquals(
                 loginUser,
                 member.getOwner());
 
-        verify(appUserService)
-                .findByUsername("user");
+        assertEquals(
+                "profile.jpg",
+                member.getProfileImageName());
+
+        verify(fileStorageService)
+                .saveProfileImage(profileImage);
+
+        verify(memberService)
+                .register(member);
+    }
+
+    @Test
+    void register_画像なしでも登録できる() {
+
+        Member member = createMember(
+                1L,
+                "田中",
+                30,
+                "一般");
+
+        AppUser loginUser = createUser(
+                1L,
+                "user",
+                Role.USER);
+
+        when(bindingResult.hasErrors())
+                .thenReturn(false);
+
+        when(authentication.getName())
+                .thenReturn("user");
+
+        when(appUserService.findByUsername("user"))
+                .thenReturn(loginUser);
+
+        when(fileStorageService.saveProfileImage(profileImage))
+                .thenReturn(null);
+
+        String result =
+                controller.register(
+                        member,
+                        bindingResult,
+                        profileImage,
+                        authentication);
+
+        assertEquals(
+                "redirect:/list?registered=true",
+                result);
+
+        assertNull(
+                member.getProfileImageName());
 
         verify(memberService)
                 .register(member);
@@ -127,15 +194,18 @@ class MemberControllerTest {
     @Test
     void register_入力エラーなら登録画面を再表示する() {
 
-        Member member = new Member();
+        Member member =
+                new Member();
 
         when(bindingResult.hasErrors())
                 .thenReturn(true);
 
-        String result = controller.register(
-                member,
-                bindingResult,
-                authentication);
+        String result =
+                controller.register(
+                        member,
+                        bindingResult,
+                        profileImage,
+                        authentication);
 
         assertEquals(
                 "index",
@@ -143,6 +213,9 @@ class MemberControllerTest {
 
         verify(appUserService, never())
                 .findByUsername(any());
+
+        verify(fileStorageService, never())
+                .saveProfileImage(any());
 
         verify(memberService, never())
                 .register(any(Member.class));
@@ -171,8 +244,11 @@ class MemberControllerTest {
                 40,
                 "ゴールド");
 
-        Page<Member> page = new PageImpl<>(
-                List.of(member1, member2));
+        Page<Member> page =
+                new PageImpl<>(
+                        List.of(
+                                member1,
+                                member2));
 
         when(memberService.findAll(
                 eq("admin"),
@@ -180,10 +256,11 @@ class MemberControllerTest {
                 any(Pageable.class)))
                 .thenReturn(page);
 
-        String result = controller.list(
-                0,
-                authentication,
-                model);
+        String result =
+                controller.list(
+                        0,
+                        authentication,
+                        model);
 
         assertEquals(
                 "list",
@@ -223,13 +300,14 @@ class MemberControllerTest {
                 "user",
                 "ROLE_USER");
 
-        Page<Member> page = new PageImpl<>(
-                List.of(
-                        createMember(
-                                1L,
-                                "田中",
-                                30,
-                                "一般")));
+        Page<Member> page =
+                new PageImpl<>(
+                        List.of(
+                                createMember(
+                                        1L,
+                                        "田中",
+                                        30,
+                                        "一般")));
 
         when(memberService.findAll(
                 eq("user"),
@@ -237,17 +315,19 @@ class MemberControllerTest {
                 any(Pageable.class)))
                 .thenReturn(page);
 
-        String result = controller.list(
-                1,
-                authentication,
-                model);
+        String result =
+                controller.list(
+                        1,
+                        authentication,
+                        model);
 
         assertEquals(
                 "list",
                 result);
 
-        ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(
-                Pageable.class);
+        ArgumentCaptor<Pageable> captor =
+                ArgumentCaptor.forClass(
+                        Pageable.class);
 
         verify(memberService)
                 .findAll(
@@ -255,7 +335,8 @@ class MemberControllerTest {
                         eq(false),
                         captor.capture());
 
-        Pageable pageable = captor.getValue();
+        Pageable pageable =
+                captor.getValue();
 
         assertEquals(
                 1,
@@ -284,18 +365,20 @@ class MemberControllerTest {
                 "admin",
                 "ROLE_ADMIN");
 
-        MemberSearchCondition condition = new MemberSearchCondition();
+        MemberSearchCondition condition =
+                new MemberSearchCondition();
 
         condition.setName("田中");
         condition.setSort("idAsc");
 
-        Page<Member> page = new PageImpl<>(
-                List.of(
-                        createMember(
-                                1L,
-                                "田中",
-                                30,
-                                "一般")));
+        Page<Member> page =
+                new PageImpl<>(
+                        List.of(
+                                createMember(
+                                        1L,
+                                        "田中",
+                                        30,
+                                        "一般")));
 
         when(memberService.search(
                 eq(condition),
@@ -304,11 +387,12 @@ class MemberControllerTest {
                 any(Pageable.class)))
                 .thenReturn(page);
 
-        String result = controller.search(
-                condition,
-                0,
-                authentication,
-                model);
+        String result =
+                controller.search(
+                        condition,
+                        0,
+                        authentication,
+                        model);
 
         assertEquals(
                 "list",
@@ -349,9 +433,11 @@ class MemberControllerTest {
                 "user",
                 "ROLE_USER");
 
-        MemberSearchCondition condition = new MemberSearchCondition();
+        MemberSearchCondition condition =
+                new MemberSearchCondition();
 
-        Page<Member> page = Page.empty();
+        Page<Member> page =
+                Page.empty();
 
         when(memberService.search(
                 eq(condition),
@@ -360,18 +446,20 @@ class MemberControllerTest {
                 any(Pageable.class)))
                 .thenReturn(page);
 
-        String result = controller.search(
-                condition,
-                2,
-                authentication,
-                model);
+        String result =
+                controller.search(
+                        condition,
+                        2,
+                        authentication,
+                        model);
 
         assertEquals(
                 "list",
                 result);
 
-        ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(
-                Pageable.class);
+        ArgumentCaptor<Pageable> captor =
+                ArgumentCaptor.forClass(
+                        Pageable.class);
 
         verify(memberService)
                 .search(
@@ -414,10 +502,18 @@ class MemberControllerTest {
                 true))
                 .thenReturn(member);
 
-        String result = controller.detail(
-                1L,
-                authentication,
-                model);
+        String result =
+                controller.detail(
+                        1L,
+                        2,
+                        false,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        authentication,
+                        model);
 
         assertEquals(
                 "detail",
@@ -433,10 +529,20 @@ class MemberControllerTest {
                 .addAttribute(
                         "member",
                         member);
+
+        verify(model)
+                .addAttribute(
+                        "page",
+                        2);
+
+        verify(model)
+                .addAttribute(
+                        "searched",
+                        false);
     }
 
     @Test
-    void detail_USERならUSERとして会員詳細を取得する() {
+    void detail_検索結果からなら検索状態をModelへ設定する() {
 
         mockAuthentication(
                 "user",
@@ -454,20 +560,57 @@ class MemberControllerTest {
                 false))
                 .thenReturn(member);
 
-        String result = controller.detail(
-                1L,
-                authentication,
-                model);
+        String result =
+                controller.detail(
+                        1L,
+                        1,
+                        true,
+                        "田中",
+                        30,
+                        "一般",
+                        "重要",
+                        "nameAsc",
+                        authentication,
+                        model);
 
         assertEquals(
                 "detail",
                 result);
 
-        verify(memberService)
-                .findById(
-                        1L,
-                        "user",
-                        false);
+        verify(model)
+                .addAttribute(
+                        "page",
+                        1);
+
+        verify(model)
+                .addAttribute(
+                        "searched",
+                        true);
+
+        verify(model)
+                .addAttribute(
+                        "name",
+                        "田中");
+
+        verify(model)
+                .addAttribute(
+                        "age",
+                        30);
+
+        verify(model)
+                .addAttribute(
+                        "memberType",
+                        "一般");
+
+        verify(model)
+                .addAttribute(
+                        "tagName",
+                        "重要");
+
+        verify(model)
+                .addAttribute(
+                        "sort",
+                        "nameAsc");
     }
 
     // =========================
@@ -493,10 +636,18 @@ class MemberControllerTest {
                 true))
                 .thenReturn(member);
 
-        String result = controller.edit(
-                1L,
-                authentication,
-                model);
+        String result =
+                controller.edit(
+                        1L,
+                        0,
+                        false,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        authentication,
+                        model);
 
         assertEquals(
                 "edit",
@@ -506,6 +657,68 @@ class MemberControllerTest {
                 .addAttribute(
                         "member",
                         member);
+
+        verify(model)
+                .addAttribute(
+                        "page",
+                        0);
+    }
+
+    @Test
+    void edit_検索結果からなら検索状態を保持する() {
+
+        mockAuthentication(
+                "admin",
+                "ROLE_ADMIN");
+
+        Member member = createMember(
+                1L,
+                "田中",
+                30,
+                "一般");
+
+        when(memberService.findById(
+                1L,
+                "admin",
+                true))
+                .thenReturn(member);
+
+        String result =
+                controller.edit(
+                        1L,
+                        2,
+                        true,
+                        "田中",
+                        30,
+                        "一般",
+                        "東京",
+                        "ageAsc",
+                        authentication,
+                        model);
+
+        assertEquals(
+                "edit",
+                result);
+
+        verify(model)
+                .addAttribute(
+                        "searched",
+                        true);
+
+        verify(model)
+                .addAttribute(
+                        "name",
+                        "田中");
+
+        verify(model)
+                .addAttribute(
+                        "tagName",
+                        "東京");
+
+        verify(model)
+                .addAttribute(
+                        "sort",
+                        "ageAsc");
     }
 
     // =========================
@@ -513,7 +726,7 @@ class MemberControllerTest {
     // =========================
 
     @Test
-    void update_正常なら更新して一覧へリダイレクトする() {
+    void update_画像変更なしなら更新して元ページへ戻る() {
 
         mockAuthentication(
                 "admin",
@@ -525,16 +738,32 @@ class MemberControllerTest {
                 31,
                 "ゴールド");
 
+        member.setProfileImageName(
+                "old.jpg");
+
         when(bindingResult.hasErrors())
                 .thenReturn(false);
 
-        String result = controller.update(
-                member,
-                bindingResult,
-                authentication);
+        when(profileImage.isEmpty())
+                .thenReturn(true);
+
+        String result =
+                controller.update(
+                        member,
+                        bindingResult,
+                        profileImage,
+                        2,
+                        false,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        authentication,
+                        model);
 
         assertEquals(
-                "redirect:/list",
+                "redirect:/list?page=2&updated=true",
                 result);
 
         verify(memberService)
@@ -542,14 +771,20 @@ class MemberControllerTest {
                         member,
                         "admin",
                         true);
+
+        verify(fileStorageService, never())
+                .saveProfileImage(any());
+
+        verify(fileStorageService, never())
+                .deleteProfileImage(any());
     }
 
     @Test
-    void update_USERならUSERとして更新する() {
+    void update_画像変更時は新画像を保存して旧画像を削除する() {
 
         mockAuthentication(
-                "user",
-                "ROLE_USER");
+                "admin",
+                "ROLE_ADMIN");
 
         Member member = createMember(
                 1L,
@@ -557,16 +792,158 @@ class MemberControllerTest {
                 31,
                 "ゴールド");
 
+        member.setProfileImageName(
+                "old.jpg");
+
         when(bindingResult.hasErrors())
                 .thenReturn(false);
 
-        String result = controller.update(
-                member,
-                bindingResult,
-                authentication);
+        when(profileImage.isEmpty())
+                .thenReturn(false);
+
+        when(fileStorageService.saveProfileImage(profileImage))
+                .thenReturn("new.jpg");
+
+        String result =
+                controller.update(
+                        member,
+                        bindingResult,
+                        profileImage,
+                        0,
+                        false,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        authentication,
+                        model);
 
         assertEquals(
-                "redirect:/list",
+                "redirect:/list?page=0&updated=true",
+                result);
+
+        assertEquals(
+                "new.jpg",
+                member.getProfileImageName());
+
+        verify(fileStorageService)
+                .saveProfileImage(
+                        profileImage);
+
+        verify(memberService)
+                .update(
+                        member,
+                        "admin",
+                        true);
+
+        verify(fileStorageService)
+                .deleteProfileImage(
+                        "old.jpg");
+    }
+
+    @Test
+    void update_DB更新後に旧画像を削除する() {
+
+        mockAuthentication(
+                "admin",
+                "ROLE_ADMIN");
+
+        Member member = createMember(
+                1L,
+                "田中",
+                30,
+                "一般");
+
+        member.setProfileImageName(
+                "old.jpg");
+
+        when(bindingResult.hasErrors())
+                .thenReturn(false);
+
+        when(profileImage.isEmpty())
+                .thenReturn(false);
+
+        when(fileStorageService.saveProfileImage(profileImage))
+                .thenReturn("new.jpg");
+
+        controller.update(
+                member,
+                bindingResult,
+                profileImage,
+                0,
+                false,
+                null,
+                null,
+                null,
+                null,
+                null,
+                authentication,
+                model);
+
+        InOrder inOrder =
+                inOrder(
+                        fileStorageService,
+                        memberService);
+
+        inOrder.verify(fileStorageService)
+                .saveProfileImage(
+                        profileImage);
+
+        inOrder.verify(memberService)
+                .update(
+                        member,
+                        "admin",
+                        true);
+
+        inOrder.verify(fileStorageService)
+                .deleteProfileImage(
+                        "old.jpg");
+    }
+
+    @Test
+    void update_検索結果からなら検索条件を保持して戻る() {
+
+        mockAuthentication(
+                "user",
+                "ROLE_USER");
+
+        Member member = createMember(
+                1L,
+                "山田太郎",
+                31,
+                "ゴールド");
+
+        when(bindingResult.hasErrors())
+                .thenReturn(false);
+
+        when(profileImage.isEmpty())
+                .thenReturn(true);
+
+        String result =
+                controller.update(
+                        member,
+                        bindingResult,
+                        profileImage,
+                        2,
+                        true,
+                        "山田",
+                        30,
+                        "ゴールド",
+                        "重要",
+                        "ageAsc",
+                        authentication,
+                        model);
+
+        assertEquals(
+                "redirect:/search"
+                        + "?page=2"
+                        + "&name=%E5%B1%B1%E7%94%B0"
+                        + "&age=30"
+                        + "&memberType=%E3%82%B4%E3%83%BC%E3%83%AB%E3%83%89"
+                        + "&tagName=%E9%87%8D%E8%A6%81"
+                        + "&sort=ageAsc"
+                        + "&updated=true",
                 result);
 
         verify(memberService)
@@ -579,25 +956,59 @@ class MemberControllerTest {
     @Test
     void update_入力エラーなら編集画面を再表示する() {
 
-        Member member = new Member();
+        Member member =
+                new Member();
 
         when(bindingResult.hasErrors())
                 .thenReturn(true);
 
-        String result = controller.update(
-                member,
-                bindingResult,
-                authentication);
+        String result =
+                controller.update(
+                        member,
+                        bindingResult,
+                        profileImage,
+                        3,
+                        true,
+                        "田中",
+                        30,
+                        "一般",
+                        "重要",
+                        "idAsc",
+                        authentication,
+                        model);
 
         assertEquals(
                 "edit",
                 result);
 
+        verify(model)
+                .addAttribute(
+                        "page",
+                        3);
+
+        verify(model)
+                .addAttribute(
+                        "searched",
+                        true);
+
+        verify(model)
+                .addAttribute(
+                        "name",
+                        "田中");
+
+        verify(model)
+                .addAttribute(
+                        "tagName",
+                        "重要");
+
+        verify(fileStorageService, never())
+                .saveProfileImage(any());
+
         verify(memberService, never())
                 .update(
                         any(Member.class),
                         any(),
-                        eq(true));
+                        any(Boolean.class));
     }
 
     // =========================
@@ -605,18 +1016,26 @@ class MemberControllerTest {
     // =========================
 
     @Test
-    void delete_ADMINなら削除して一覧へリダイレクトする() {
+    void delete_ADMINなら削除して元ページへ戻る() {
 
         mockAuthentication(
                 "admin",
                 "ROLE_ADMIN");
 
-        String result = controller.delete(
-                1L,
-                authentication);
+        String result =
+                controller.delete(
+                        1L,
+                        2,
+                        false,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        authentication);
 
         assertEquals(
-                "redirect:/list",
+                "redirect:/list?page=2&deleted=true",
                 result);
 
         verify(memberService)
@@ -633,12 +1052,20 @@ class MemberControllerTest {
                 "user",
                 "ROLE_USER");
 
-        String result = controller.delete(
-                1L,
-                authentication);
+        String result =
+                controller.delete(
+                        1L,
+                        1,
+                        false,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        authentication);
 
         assertEquals(
-                "redirect:/list",
+                "redirect:/list?page=1&deleted=true",
                 result);
 
         verify(memberService)
@@ -646,6 +1073,43 @@ class MemberControllerTest {
                         1L,
                         "user",
                         false);
+    }
+
+    @Test
+    void delete_検索結果からなら検索条件を保持して戻る() {
+
+        mockAuthentication(
+                "admin",
+                "ROLE_ADMIN");
+
+        String result =
+                controller.delete(
+                        1L,
+                        2,
+                        true,
+                        "田中",
+                        30,
+                        "ゴールド",
+                        "重要",
+                        "idDesc",
+                        authentication);
+
+        assertEquals(
+                "redirect:/search"
+                        + "?page=2"
+                        + "&name=%E7%94%B0%E4%B8%AD"
+                        + "&age=30"
+                        + "&memberType=%E3%82%B4%E3%83%BC%E3%83%AB%E3%83%89"
+                        + "&tagName=%E9%87%8D%E8%A6%81"
+                        + "&sort=idDesc"
+                        + "&deleted=true",
+                result);
+
+        verify(memberService)
+                .delete(
+                        1L,
+                        "admin",
+                        true);
     }
 
     // =========================
@@ -659,9 +1123,11 @@ class MemberControllerTest {
         when(authentication.getName())
                 .thenReturn(username);
 
-        GrantedAuthority authority = () -> role;
+        GrantedAuthority authority =
+                () -> role;
 
-        doReturn(List.of(authority))
+        doReturn(
+                List.of(authority))
                 .when(authentication)
                 .getAuthorities();
     }
@@ -672,7 +1138,8 @@ class MemberControllerTest {
             Integer age,
             String memberType) {
 
-        Member member = new Member();
+        Member member =
+                new Member();
 
         member.setId(id);
         member.setName(name);
@@ -687,11 +1154,13 @@ class MemberControllerTest {
             String username,
             Role role) {
 
-        AppUser appUser = new AppUser();
+        AppUser appUser =
+                new AppUser();
 
         appUser.setId(id);
         appUser.setUsername(username);
-        appUser.setPassword("hashedPassword");
+        appUser.setPassword(
+                "hashedPassword");
         appUser.setRole(role);
 
         return appUser;

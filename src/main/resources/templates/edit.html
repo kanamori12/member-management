@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 
-<html lang="ja" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="ja"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="~{fragments/head :: head('会員編集')}"></head>
 
@@ -14,46 +16,115 @@
 
             <div class="card-body">
 
-                <form th:action="@{/update}" th:object="${member}" method="post">
+                <form th:action="@{/update}"
+                      th:object="${member}"
+                      method="post"
+                      enctype="multipart/form-data">
 
-                    <input type="hidden" th:field="*{id}">
+                    <!-- =========================
+                         会員ID
+                         ========================= -->
+                    <input type="hidden"
+                           th:field="*{id}">
 
-                    <!-- 名前 -->
+                    <!-- =========================
+                         既存プロフィール画像
+                         ========================= -->
+                    <input type="hidden"
+                           th:field="*{profileImageName}">
+
+
+                    <!-- =========================
+                         一覧・検索状態保持
+                         ========================= -->
+
+                    <!-- 元のページ番号 -->
+                    <input type="hidden"
+                           name="page"
+                           th:value="${page}">
+
+                    <!-- 検索結果から来たか -->
+                    <input type="hidden"
+                           name="searched"
+                           th:value="${searched}">
+
+                    <!-- 元の検索条件 -->
+                    <input type="hidden"
+                           name="searchName"
+                           th:value="${name}">
+
+                    <input type="hidden"
+                           name="searchAge"
+                           th:value="${age}">
+
+                    <input type="hidden"
+                           name="searchMemberType"
+                           th:value="${memberType}">
+
+                    <input type="hidden"
+                           name="searchTagName"
+                           th:value="${tagName}">
+
+                    <input type="hidden"
+                           name="searchSort"
+                           th:value="${sort}">
+
+
+                    <!-- =========================
+                         名前
+                         ========================= -->
                     <div class="mb-3">
 
                         <label class="form-label">
                             名前
                         </label>
 
-                        <input type="text" th:field="*{name}" class="form-control">
+                        <input type="text"
+                               th:field="*{name}"
+                               class="form-control">
 
-                        <div class="text-danger mt-1" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('name')}"
+                             th:errors="*{name}">
                         </div>
 
                     </div>
 
-                    <!-- 年齢 -->
+
+                    <!-- =========================
+                         年齢
+                         ========================= -->
                     <div class="mb-3">
 
                         <label class="form-label">
                             年齢
                         </label>
 
-                        <input type="number" th:field="*{age}" min="0" class="form-control">
+                        <input type="number"
+                               th:field="*{age}"
+                               min="0"
+                               max="120"
+                               class="form-control">
 
-                        <div class="text-danger mt-1" th:if="${#fields.hasErrors('age')}" th:errors="*{age}">
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('age')}"
+                             th:errors="*{age}">
                         </div>
 
                     </div>
 
-                    <!-- 会員種別 -->
+
+                    <!-- =========================
+                         会員種別
+                         ========================= -->
                     <div class="mb-4">
 
                         <label class="form-label">
                             会員種別
                         </label>
 
-                        <select th:field="*{memberType}" class="form-select">
+                        <select th:field="*{memberType}"
+                                class="form-select">
 
                             <option value="一般">
                                 一般
@@ -65,35 +136,109 @@
 
                         </select>
 
-                        <div class="text-danger mt-1" th:if="${#fields.hasErrors('memberType')}"
-                            th:errors="*{memberType}">
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('memberType')}"
+                             th:errors="*{memberType}">
                         </div>
 
                     </div>
 
-                    <!-- タグ -->
+
+                    <!-- =========================
+                         タグ
+                         ========================= -->
                     <div class="mb-4">
 
                         <label class="form-label">
                             タグ
                         </label>
 
-                        <input type="text" th:field="*{tagNames}" class="form-control" placeholder="例：重要, 横浜, 要フォロー">
+                        <input type="text"
+                               th:field="*{tagNames}"
+                               class="form-control"
+                               placeholder="例：重要, 横浜, 要フォロー">
 
                         <div class="form-text">
-                            複数のタグを登録する場合は、カンマ区切りで入力してください。
+                            複数のタグを登録する場合は、
+                            カンマ区切りで入力してください。
                         </div>
 
                     </div>
-                    
-                    <!-- ボタン -->
+
+
+                    <!-- =========================
+                         プロフィール画像
+                         ========================= -->
+                    <div class="mb-4">
+
+                        <label class="form-label">
+                            プロフィール画像
+                        </label>
+
+                        <!-- 現在の画像 -->
+                        <div class="mb-2"
+                             th:if="${member.profileImageName != null}">
+
+                            <img th:src="@{/uploads/{filename}(
+                                    filename=${member.profileImageName})}"
+                                 alt="現在のプロフィール画像"
+                                 class="img-thumbnail"
+                                 style="max-width: 150px;
+                                        max-height: 150px;">
+
+                        </div>
+
+                        <!-- 画像未登録 -->
+                        <div class="mb-2 text-muted"
+                             th:if="${member.profileImageName == null}">
+
+                            現在プロフィール画像は登録されていません。
+
+                        </div>
+
+                        <!-- 新しい画像 -->
+                        <input type="file"
+                               name="profileImage"
+                               class="form-control"
+                               accept="image/*">
+
+                        <div class="form-text">
+                            変更しない場合は選択しないでください。
+                        </div>
+
+                    </div>
+
+
+                    <!-- =========================
+                         ボタン
+                         ========================= -->
                     <div class="d-flex gap-2">
 
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit"
+                                class="btn btn-primary">
                             更新
                         </button>
 
-                        <a th:href="@{/list}" class="btn btn-outline-secondary">
+
+                        <!-- 通常一覧へ戻る -->
+                        <a th:if="${!searched}"
+                           th:href="@{/list(
+                                page=${page})}"
+                           class="btn btn-outline-secondary">
+                            一覧に戻る
+                        </a>
+
+
+                        <!-- 検索結果へ戻る -->
+                        <a th:if="${searched}"
+                           th:href="@{/search(
+                                page=${page},
+                                name=${name},
+                                age=${age},
+                                memberType=${memberType},
+                                tagName=${tagName},
+                                sort=${sort})}"
+                           class="btn btn-outline-secondary">
                             一覧に戻る
                         </a>
 
